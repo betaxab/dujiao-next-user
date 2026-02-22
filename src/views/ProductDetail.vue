@@ -243,6 +243,7 @@ import { processHtmlForDisplay } from '../utils/content'
 import { useCartStore } from '../stores/cart'
 import { useUserAuthStore } from '../stores/userAuth'
 import { debounceAsync } from '../utils/debounce'
+import { useHead } from '@unhead/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -409,6 +410,46 @@ const loadProduct = async () => {
 }
 
 const debouncedLoadProduct = debounceAsync(loadProduct, 300)
+
+useHead({
+  title: () => product.value ? getLocalizedText(product.value.title) : '',
+  meta: () => {
+    if (!product.value) return []
+    const seoMeta = product.value.seo_meta || {}
+    const tags = []
+
+    // Standard SEO Tags
+    if (seoMeta.keywords) tags.push({ name: 'keywords', content: seoMeta.keywords })
+    if (seoMeta.description) tags.push({ name: 'description', content: seoMeta.description })
+
+    // Open Graph Tags
+    tags.push({ property: 'og:type', content: 'website' })
+    if (product.value.title) {
+      tags.push({ property: 'og:title', content: getLocalizedText(product.value.title) })
+    }
+    if (seoMeta.description) {
+      tags.push({ property: 'og:description', content: seoMeta.description })
+    }
+    if (images.value && images.value.length > 0) {
+      tags.push({ property: 'og:image', content: images.value[0] })
+    }
+    tags.push({ property: 'og:url', content: window.location.href })
+
+    // Twitter Card Tags
+    tags.push({ name: 'twitter:card', content: 'summary_large_image' })
+    if (product.value.title) {
+      tags.push({ name: 'twitter:title', content: getLocalizedText(product.value.title) })
+    }
+    if (seoMeta.description) {
+      tags.push({ name: 'twitter:description', content: seoMeta.description })
+    }
+    if (images.value && images.value.length > 0) {
+      tags.push({ name: 'twitter:image', content: images.value[0] })
+    }
+
+    return tags
+  }
+})
 
 onMounted(() => {
   debouncedLoadProduct()
