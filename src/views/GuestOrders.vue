@@ -99,6 +99,7 @@ import { guestOrderAPI } from '../api'
 import { useI18n } from 'vue-i18n'
 import { orderStatusClass, orderStatusLabel } from '../utils/status'
 import { debounceAsync } from '../utils/debounce'
+import { amountToCents } from '../utils/money'
 
 const savedAuth = ref<{ email: string; order_password: string }>({ email: '', order_password: '' })
 const email = ref('')
@@ -212,8 +213,8 @@ const formatMoney = (amount?: string, currency?: string) => {
 
 const hasDiscountAmount = (amount?: string) => {
   if (amount === null || amount === undefined || amount === '') return false
-  const value = Number(amount)
-  return !Number.isNaN(value) && value > 0
+  const valueCents = amountToCents(amount)
+  return valueCents !== null && valueCents > 0
 }
 
 const hasDiscount = (order: any) => {

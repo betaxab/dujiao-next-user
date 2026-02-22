@@ -393,6 +393,7 @@ import { orderStatusLabel } from '../utils/status'
 import { fulfillmentTypeLabel } from '../utils/fulfillment'
 import { debounceAsync } from '../utils/debounce'
 import { copyText } from '../utils/clipboard'
+import { amountToCents, basisPointsToPercent, calculateFeeCents, centsToAmount, rateToBasisPoints } from '../utils/money'
 import QRCode from 'qrcode'
 import { pageAlertClass, type PageAlert } from '../utils/alerts'
 
@@ -624,67 +625,64 @@ const showCountdown = computed(() => Boolean(expiresAtMs.value && order.value?.s
 const showResultView = computed(() => Boolean(paymentResult.value && order.value && order.value.status === 'pending_payment' && !orderExpired.value && !orderCanceled.value))
 const pollingActive = computed(() => pollTimer.value !== null)
 const orderItems = computed(() => (Array.isArray(order.value?.items) ? order.value.items : []))
-const feeRateValue = computed(() => {
+const feeRateBasisPoints = computed(() => {
   if (paymentResult.value?.fee_rate !== undefined) {
-    return parseAmount(paymentResult.value.fee_rate)
+    return rateToBasisPoints(paymentResult.value.fee_rate)
   }
   if (selectedChannel.value?.fee_rate !== undefined) {
-    return parseAmount(selectedChannel.value.fee_rate)
+    return rateToBasisPoints(selectedChannel.value.fee_rate)
   }
   return null
 })
 const feeRateDisplay = computed(() => {
-  const rate = feeRateValue.value
+  const rate = feeRateBasisPoints.value
   if (rate === null) return '-'
   if (rate <= 0) return t('payment.feeFree')
-  return `${rate.toFixed(2)}%`
+  return `${basisPointsToPercent(rate)}%`
 })
-const feeAmountValue = computed(() => {
+const feeAmountCents = computed(() => {
   if (paymentResult.value?.fee_amount !== undefined && paymentResult.value?.fee_amount !== null && paymentResult.value?.fee_amount !== '') {
-    return parseAmount(paymentResult.value.fee_amount)
+    return amountToCents(paymentResult.value.fee_amount)
   }
-  const rate = feeRateValue.value
-  const base = parseAmount(order.value?.total_amount)
+  const rate = feeRateBasisPoints.value
+  const base = amountToCents(order.value?.total_amount)
   if (rate === null || base === null) return null
   if (rate <= 0) return 0
-  return Number((base * rate / 100).toFixed(2))
+  return calculateFeeCents(base, rate)
 })
 const feeAmountDisplay = computed(() => {
-  const value = feeAmountValue.value
+  const value = feeAmountCents.value
   if (value === null) return '-'
-  return formatMoney(value.toFixed(2), order.value?.currency)
+  return formatMoney(centsToAmount(value), order.value?.currency)
 })
 const payableAmountDisplay = computed(() => {
   if (paymentResult.value?.amount !== undefined && paymentResult.value?.amount !== null && paymentResult.value?.amount !== '') {
     return formatMoney(String(paymentResult.value.amount), order.value?.currency)
   }
-  const base = parseAmount(order.value?.total_amount)
-  const fee = feeAmountValue.value
+  const base = amountToCents(order.value?.total_amount)
+  const fee = feeAmountCents.value
   if (base === null || fee === null) return '-'
-  const total = Number((base + fee).toFixed(2))
-  return formatMoney(total.toFixed(2), order.value?.currency)
+  return formatMoney(centsToAmount(base + fee), order.value?.currency)
 })
 const walletBalanceDisplay = computed(() => formatMoney(walletBalance.value, order.value?.currency))
-const expectedWalletPaidValue = computed(() => {
+const expectedWalletPaidCents = computed(() => {
   if (!showBalanceOption.value || !useBalance.value) return 0
-  const balance = parseAmount(walletBalance.value)
-  const total = parseAmount(order.value?.total_amount)
+  const balance = amountToCents(walletBalance.value)
+  const total = amountToCents(order.value?.total_amount)
   if (balance === null || total === null) return 0
-  const value = Math.min(balance, total)
-  return Number(value.toFixed(2))
+  return Math.min(balance, total)
 })
-const expectedOnlinePayValue = computed(() => {
-  const total = parseAmount(order.value?.total_amount)
+const expectedOnlinePayCents = computed(() => {
+  const total = amountToCents(order.value?.total_amount)
   if (total === null) return 0
-  const value = total - expectedWalletPaidValue.value
-  return Number(Math.max(value, 0).toFixed(2))
+  return Math.max(total - expectedWalletPaidCents.value, 0)
 })
-const expectedWalletPaidDisplay = computed(() => formatMoney(expectedWalletPaidValue.value.toFixed(2), order.value?.currency))
-const expectedOnlinePayDisplay = computed(() => formatMoney(expectedOnlinePayValue.value.toFixed(2), order.value?.currency))
+const expectedWalletPaidDisplay = computed(() => formatMoney(centsToAmount(expectedWalletPaidCents.value), order.value?.currency))
+const expectedOnlinePayDisplay = computed(() => formatMoney(centsToAmount(expectedOnlinePayCents.value), order.value?.currency))
 const requiresOnlineChannel = computed(() => {
   if (isGuest.value) return true
   if (!useBalance.value) return true
-  return expectedOnlinePayValue.value > 0
+  return expectedOnlinePayCents.value > 0
 })
 const canSubmitPayment = computed(() => {
   if (submitting.value) return false
@@ -1101,13 +1099,6 @@ const formatMoney = (amount?: string, currency?: string) => {
     return String(amount)
   }
   return `${amount} ${currency}`
-}
-
-const parseAmount = (value?: any) => {
-  if (value === null || value === undefined || value === '') return null
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) return null
-  return parsed
 }
 
 const getLocalizedText = (jsonData: any) => {

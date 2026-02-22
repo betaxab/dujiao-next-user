@@ -300,6 +300,7 @@ import { useUserAuthStore } from '../stores/userAuth'
 import { guestOrderAPI, userOrderAPI, type CaptchaPayload } from '../api'
 import { debounceAsync } from '../utils/debounce'
 import { pageAlertClass, type PageAlert } from '../utils/alerts'
+import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import ImageCaptcha from '../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../components/captcha/TurnstileCaptcha.vue'
 
@@ -321,12 +322,15 @@ const previewError = ref('')
 const previewRequestId = ref(0)
 const couponRefreshing = ref(false)
 
-const totalAmount = computed(() => cartItems.value.reduce((sum, item) => {
-  const amount = Number(item.priceAmount || 0)
-  const qty = Number(item.quantity || 0)
-  if (Number.isNaN(amount) || Number.isNaN(qty)) return sum
-  return sum + amount * qty
-}, 0))
+const totalAmount = computed(() => {
+  const totalCents = cartItems.value.reduce((sum, item) => {
+    const amountCents = amountToCents(item.priceAmount)
+    const qty = parseInteger(item.quantity)
+    if (amountCents === null || qty === null) return sum
+    return sum + amountCents * qty
+  }, 0)
+  return centsToAmount(totalCents)
+})
 
 const totalCurrency = computed(() => {
   const currencies = cartItems.value.map(item => item.priceCurrency).filter(Boolean)
@@ -892,11 +896,11 @@ const formatPrice = (amount: any, currency: any) => {
 }
 
 const itemSubtotal = (item: CartItem) => {
-  const amount = Number(item.priceAmount || 0)
-  const qty = Number(item.quantity || 0)
-  if (Number.isNaN(amount) || Number.isNaN(qty)) {
+  const amountCents = amountToCents(item.priceAmount)
+  const qty = parseInteger(item.quantity)
+  if (amountCents === null || qty === null) {
     return formatPrice('-', item.priceCurrency)
   }
-  return formatPrice((amount * qty).toFixed(2), item.priceCurrency)
+  return formatPrice(centsToAmount(amountCents * qty), item.priceCurrency)
 }
 </script>

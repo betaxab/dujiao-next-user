@@ -266,6 +266,7 @@ import { useAppStore } from '../stores/app'
 import { bannerAPI, postAPI, productAPI } from '../api'
 import { getFirstImageUrl, getImageUrl } from '../utils/image'
 import { debounceAsync } from '../utils/debounce'
+import { amountToCents } from '../utils/money'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -442,9 +443,7 @@ const formatPrice = (amount: any, currency: any) => {
 }
 
 const parsePriceAmount = (amount: any) => {
-  const numeric = Number(amount)
-  if (!Number.isFinite(numeric)) return null
-  return numeric
+  return amountToCents(amount)
 }
 
 const getPromotionPriceAmount = (product: any) => product?.promotion_price_amount

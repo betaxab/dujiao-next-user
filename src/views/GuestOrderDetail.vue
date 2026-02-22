@@ -271,6 +271,7 @@ import { useI18n } from 'vue-i18n'
 import { orderStatusClass, orderStatusLabel } from '../utils/status'
 import { fulfillmentStatusLabel, fulfillmentTypeLabel } from '../utils/fulfillment'
 import { debounceAsync } from '../utils/debounce'
+import { amountToCents } from '../utils/money'
 
 const route = useRoute()
 const router = useRouter()
@@ -357,8 +358,8 @@ const formatMoney = (amount?: string, currency?: string) => {
 
 const hasDiscountAmount = (amount?: string) => {
   if (amount === null || amount === undefined || amount === '') return false
-  const value = Number(amount)
-  return !Number.isNaN(value) && value > 0
+  const valueCents = amountToCents(amount)
+  return valueCents !== null && valueCents > 0
 }
 
 const formatManualValue = (value: unknown) => {

@@ -133,7 +133,7 @@
             </div>
             <div class="flex items-center justify-between">
               <span>{{ t('cart.totalLabel') }}</span>
-              <span class="font-mono text-lg font-bold theme-text-primary">{{ formatPrice(totalAmount.toFixed(2), totalCurrency) }}</span>
+              <span class="font-mono text-lg font-bold theme-text-primary">{{ formatPrice(totalAmount, totalCurrency) }}</span>
             </div>
             <div class="rounded-lg border theme-surface-soft p-3 text-xs theme-text-muted">
               {{ t('cart.disclaimer') }}
@@ -165,6 +165,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore, type CartItem } from '../stores/cart'
 import { useAppStore } from '../stores/app'
+import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 
 const cartStore = useCartStore()
 const appStore = useAppStore()
@@ -172,12 +173,15 @@ const { t } = useI18n()
 
 const cartItems = computed(() => cartStore.items)
 const totalItems = computed(() => cartStore.totalItems)
-const totalAmount = computed(() => cartItems.value.reduce((sum, item) => {
-  const amount = Number(item.priceAmount || 0)
-  const qty = Number(item.quantity || 0)
-  if (Number.isNaN(amount) || Number.isNaN(qty)) return sum
-  return sum + amount * qty
-}, 0))
+const totalAmount = computed(() => {
+  const totalCents = cartItems.value.reduce((sum, item) => {
+    const amountCents = amountToCents(item.priceAmount)
+    const qty = parseInteger(item.quantity)
+    if (amountCents === null || qty === null) return sum
+    return sum + amountCents * qty
+  }, 0)
+  return centsToAmount(totalCents)
+})
 const totalCurrency = computed(() => {
   const currencies = cartItems.value.map(item => item.priceCurrency).filter(Boolean)
   const unique = Array.from(new Set(currencies))
@@ -205,12 +209,12 @@ const formatPrice = (amount: any, currency: any) => {
 }
 
 const itemSubtotal = (item: CartItem) => {
-  const amount = Number(item.priceAmount || 0)
-  const qty = Number(item.quantity || 0)
-  if (Number.isNaN(amount) || Number.isNaN(qty)) {
+  const amountCents = amountToCents(item.priceAmount)
+  const qty = parseInteger(item.quantity)
+  if (amountCents === null || qty === null) {
     return formatPrice('-', item.priceCurrency)
   }
-  return formatPrice((amount * qty).toFixed(2), item.priceCurrency)
+  return formatPrice(centsToAmount(amountCents * qty), item.priceCurrency)
 }
 
 const updateQty = (item: CartItem, qty: number) => {

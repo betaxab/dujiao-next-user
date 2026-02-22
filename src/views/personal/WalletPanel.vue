@@ -224,6 +224,7 @@ import { useI18n } from 'vue-i18n'
 import { walletAPI } from '../../api'
 import { useAppStore } from '../../stores/app'
 import { pageAlertClass, type PageAlert } from '../../utils/alerts'
+import { amountToCents } from '../../utils/money'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -411,8 +412,8 @@ const initialize = async () => {
 const handleRecharge = async () => {
   walletAlert.value = null
   const amount = rechargeForm.amount.trim()
-  const value = Number(amount)
-  if (!amount || Number.isNaN(value) || value <= 0) {
+  const amountCents = amountToCents(amount)
+  if (!amount || amountCents === null || amountCents <= 0) {
     walletAlert.value = {
       level: 'warning',
       message: t('personalCenter.wallet.errors.invalidAmount'),

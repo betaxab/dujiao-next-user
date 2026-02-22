@@ -243,6 +243,7 @@ import { processHtmlForDisplay } from '../utils/content'
 import { useCartStore } from '../stores/cart'
 import { useUserAuthStore } from '../stores/userAuth'
 import { debounceAsync } from '../utils/debounce'
+import { amountToCents, centsToAmount } from '../utils/money'
 
 const route = useRoute()
 const router = useRouter()
@@ -336,9 +337,7 @@ const formatPrice = (amount: any, currency: any) => {
 }
 
 const parsePriceAmount = (amount: any) => {
-  const numeric = Number(amount)
-  if (!Number.isFinite(numeric)) return null
-  return numeric
+  return amountToCents(amount)
 }
 
 const getPromotionPriceAmount = (payload: any) => payload?.promotion_price_amount
@@ -357,7 +356,7 @@ const getPromotionSaveAmount = (payload: any) => {
   if (original === null || promotion === null || promotion >= original) {
     return '0.00'
   }
-  return (original - promotion).toFixed(2)
+  return centsToAmount(original - promotion)
 }
 
 const addToCart = () => {
