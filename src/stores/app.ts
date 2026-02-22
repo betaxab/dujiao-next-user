@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { configAPI } from '../api'
 import { applyCustomScripts } from '../utils/customScripts'
+import { useHead } from '@unhead/vue'
 
 export const useAppStore = defineStore('app', () => {
     const locale = ref(localStorage.getItem('locale') || 'zh-CN')
@@ -14,50 +15,57 @@ export const useAppStore = defineStore('app', () => {
         localStorage.setItem('locale', newLocale)
     }
 
-    // 更新SEO信息
-    const applySEO = () => {
-        if (!config.value?.seo) {
-            return
-        }
+    // 全局响应式 SEO 配置
+    useHead({
+        title: () => {
+            const seo = config.value?.seo
+            if (!seo) return undefined
+            const lang = locale.value
+            return seo.title && seo.title[lang] ? seo.title[lang] : undefined
+        },
+        meta: () => {
+            const seo = config.value?.seo
+            if (!seo) return []
+            const lang = locale.value
+            const tags = []
 
-        // 确保 lang 匹配配置中的键（zh-CN, zh-TW, en-US）
-        // 如果 locale 格式不匹配需要转换，但这里假设是一致的
-        const lang = locale.value
-        const seo = config.value.seo
-
-        // Title
-        if (seo.title && seo.title[lang]) {
-            document.title = seo.title[lang]
-        }
-
-        // Description
-        if (seo.description && seo.description[lang]) {
-            let metaDesc = document.querySelector('meta[name="description"]')
-            if (!metaDesc) {
-                metaDesc = document.createElement('meta')
-                metaDesc.setAttribute('name', 'description')
-                document.head.appendChild(metaDesc)
+            // 基础 SEO 标签
+            if (seo.keywords && seo.keywords[lang]) {
+                tags.push({ name: 'keywords', content: seo.keywords[lang] })
             }
-            metaDesc.setAttribute('content', seo.description[lang])
-        }
-
-        // Keywords
-        if (seo.keywords && seo.keywords[lang]) {
-            let metaKeywords = document.querySelector('meta[name="keywords"]')
-            if (!metaKeywords) {
-                metaKeywords = document.createElement('meta')
-                metaKeywords.setAttribute('name', 'keywords')
-                document.head.appendChild(metaKeywords)
+            if (seo.description && seo.description[lang]) {
+                tags.push({ name: 'description', content: seo.description[lang] })
             }
-            metaKeywords.setAttribute('content', seo.keywords[lang])
-        }
-    }
 
-    // 监听语言变化更新SEO
-    // 监听语言变化更新SEO
-    watch(locale, () => {
-        applySEO()
+            // Open Graph 标签
+            tags.push({ property: 'og:type', content: 'website' })
+            if (seo.title && seo.title[lang]) {
+                tags.push({ property: 'og:title', content: seo.title[lang] })
+            }
+            if (seo.description && seo.description[lang]) {
+                tags.push({ property: 'og:description', content: seo.description[lang] })
+            }
+            tags.push({ property: 'og:url', content: window.location.href })
+            // 注意：全局设置通常可以设置一个通用的 default_og_image
+
+            // Twitter Card 标签
+            tags.push({ name: 'twitter:card', content: 'summary_large_image' })
+            if (seo.title && seo.title[lang]) {
+                tags.push({ name: 'twitter:title', content: seo.title[lang] })
+            }
+            if (seo.description && seo.description[lang]) {
+                tags.push({ name: 'twitter:description', content: seo.description[lang] })
+            }
+
+            return tags
+        }
     })
+
+    // 更新SEO信息 (向后兼容的方法)
+    const applySEO = () => {
+        // 由于 useHead 已经是响应式的，这里不再需要显式调用
+        // 留空函数以防其他组件出错
+    }
 
     // 加载全局配置
     const loadConfig = async (force = false) => {
