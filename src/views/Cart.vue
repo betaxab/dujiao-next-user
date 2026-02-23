@@ -166,12 +166,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCartStore, type CartItem } from '../stores/cart'
 import { useAppStore } from '../stores/app'
 import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
+import { refreshCartStockSnapshots } from '../utils/cartStock'
 
 const cartStore = useCartStore()
 const appStore = useAppStore()
@@ -259,9 +260,12 @@ const normalizeStockNumber = (value: unknown) => {
   return Math.max(Math.floor(numberValue), 0)
 }
 
+const hasItemStockSnapshot = (item: CartItem) => Boolean(String(item.skuStockSnapshotAt || '').trim())
+
 const shouldEnforceItemStock = (item: CartItem) => {
   if (item.fulfillmentType !== 'manual') return false
-  if (item.skuStockEnforced) return true
+  if (!hasItemStockSnapshot(item)) return false
+  if (item.skuStockEnforced === true) return true
   const code = String(item.skuCode || '').trim().toUpperCase()
   const total = normalizeStockNumber(item.skuManualStockTotal)
   if (total > 0) return true
@@ -290,4 +294,8 @@ const itemStockHint = (item: CartItem) => {
 }
 
 const quantityWarning = (item: CartItem) => quantityWarnings.value[cartItemKey(item)] || ''
+
+onMounted(() => {
+  void refreshCartStockSnapshots(cartStore)
+})
 </script>

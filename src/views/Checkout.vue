@@ -42,7 +42,10 @@
               <div
                 v-for="item in cartItems"
                 :key="cartItemKey(item)"
-                class="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-white/10 dark:bg-black/20"
+                class="rounded-xl border p-4"
+                :class="itemStockExceeded(item)
+                  ? 'border-amber-200 bg-amber-50/60 dark:border-amber-700 dark:bg-amber-950/20'
+                  : 'border-gray-100 bg-gray-50 dark:border-white/10 dark:bg-black/20'"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div>
@@ -54,6 +57,15 @@
                     </router-link>
                     <div class="mt-1 text-xs text-gray-500">{{ t('checkout.quantityLabel') }}：{{ item.quantity }}</div>
                     <div v-if="itemSkuDisplay(item)" class="mt-1 text-xs text-gray-500">{{ t('checkout.skuLabel') }}：{{ itemSkuDisplay(item) }}</div>
+                    <div
+                      v-if="itemStockHint(item)"
+                      class="mt-1 text-xs"
+                      :class="itemStockExceeded(item)
+                        ? 'text-amber-600 dark:text-amber-300'
+                        : 'text-gray-500'"
+                    >
+                      {{ itemStockHint(item) }}
+                    </div>
                     <div class="mt-2 flex flex-wrap gap-2">
                       <span
                         class="theme-badge text-xs uppercase tracking-wider"
@@ -303,6 +315,7 @@ import { debounceAsync } from '../utils/debounce'
 import { pageAlertClass, type PageAlert } from '../utils/alerts'
 import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
+import { refreshCartStockSnapshots } from '../utils/cartStock'
 import ImageCaptcha from '../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../components/captcha/TurnstileCaptcha.vue'
 
@@ -323,6 +336,7 @@ const previewLoading = ref(false)
 const previewError = ref('')
 const previewRequestId = ref(0)
 const couponRefreshing = ref(false)
+const syncingStock = ref(false)
 
 const totalAmount = computed(() => {
   const totalCents = cartItems.value.reduce((sum, item) => {
@@ -696,9 +710,11 @@ const handleGuestCaptchaConfigStale = async () => {
 }
 
 const canSubmit = computed(() => {
+  if (syncingStock.value) return false
   if (submitting.value) return false
   if (cartItems.value.length === 0) return false
   if (!manualFormValidation.value.valid) return false
+  if (cartItems.value.some((item) => itemStockExceeded(item))) return false
   if (userAuthStore.isAuthenticated) return true
   if (checkoutMode.value !== 'guest') return false
   if (!guestEmail.value.trim() || !guestPassword.value.trim() || !guestEmailValid.value) return false
@@ -713,9 +729,14 @@ const canSubmit = computed(() => {
 })
 
 const submitBlockedReason = computed(() => {
+  if (syncingStock.value) return t('checkout.stockSyncing')
   if (cartItems.value.length === 0) return t('checkout.errors.emptyCart')
   if (!manualFormValidation.value.valid) {
     return manualFormValidation.value.firstError || t('checkout.errors.manualFormInvalid')
+  }
+  const stockBlockedItem = cartItems.value.find((item) => itemStockExceeded(item))
+  if (stockBlockedItem) {
+    return itemStockHint(stockBlockedItem) || t('cart.stockOut')
   }
   if (userAuthStore.isAuthenticated) return ''
   if (checkoutMode.value !== 'guest') return t('checkout.errors.loginOrGuest')
@@ -762,7 +783,23 @@ const buildOrderPayload = () => ({
   manual_form_data: buildManualFormDataPayload(),
 })
 
+const syncCartStockSnapshots = async () => {
+  if (syncingStock.value) return
+  syncingStock.value = true
+  try {
+    await refreshCartStockSnapshots(cartStore)
+  } finally {
+    syncingStock.value = false
+  }
+}
+
 const loadPreview = async () => {
+  if (syncingStock.value) {
+    preview.value = null
+    previewError.value = ''
+    couponRefreshing.value = false
+    return
+  }
   if (cartItems.value.length === 0) {
     preview.value = null
     previewError.value = ''
@@ -776,6 +813,12 @@ const loadPreview = async () => {
     return
   }
   if (!manualFormValidation.value.valid) {
+    preview.value = null
+    previewError.value = ''
+    couponRefreshing.value = false
+    return
+  }
+  if (cartItems.value.some((item) => itemStockExceeded(item))) {
     preview.value = null
     previewError.value = ''
     couponRefreshing.value = false
@@ -825,6 +868,7 @@ const handleSubmit = async () => {
   submitAttempted.value = true
   error.value = ''
   previewError.value = ''
+  await syncCartStockSnapshots()
   if (!canSubmit.value) {
     error.value = submitBlockedReason.value || t('checkout.errors.submitFailed')
     return
@@ -900,6 +944,7 @@ onMounted(async () => {
   if (!appStore.config) {
     await appStore.loadConfig()
   }
+  await syncCartStockSnapshots()
   debouncedLoadPreview()
 })
 
@@ -949,5 +994,51 @@ const itemSubtotal = (item: CartItem) => {
     return formatPrice('-', totalCurrency.value)
   }
   return formatPrice(centsToAmount(amountCents * qty), totalCurrency.value)
+}
+
+const normalizeStockNumber = (value: unknown) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return 0
+  return Math.max(Math.floor(numberValue), 0)
+}
+
+const hasItemStockSnapshot = (item: CartItem) => Boolean(String(item.skuStockSnapshotAt || '').trim())
+
+const shouldEnforceItemStock = (item: CartItem) => {
+  if (item.fulfillmentType !== 'manual') return false
+  if (!hasItemStockSnapshot(item)) return false
+  if (item.skuStockEnforced === true) return true
+  const code = String(item.skuCode || '').trim().toUpperCase()
+  const total = normalizeStockNumber(item.skuManualStockTotal)
+  if (total > 0) return true
+  return Boolean(code && code !== 'DEFAULT')
+}
+
+const itemAvailableStock = (item: CartItem) => {
+  if (!shouldEnforceItemStock(item)) return null
+  const total = normalizeStockNumber(item.skuManualStockTotal)
+  const locked = normalizeStockNumber(item.skuManualStockLocked)
+  const sold = normalizeStockNumber(item.skuManualStockSold)
+  return Math.max(total - locked - sold, 0)
+}
+
+const itemMaxQuantity = (item: CartItem) => {
+  const available = itemAvailableStock(item)
+  if (available === null) return 99
+  return Math.max(Math.min(available, 99), 0)
+}
+
+const itemStockExceeded = (item: CartItem) => {
+  const qty = parseInteger(item.quantity)
+  if (qty === null) return true
+  return qty > itemMaxQuantity(item)
+}
+
+const itemStockHint = (item: CartItem) => {
+  const available = itemAvailableStock(item)
+  if (available === null) return ''
+  if (available <= 0) return t('cart.stockOut')
+  if (itemStockExceeded(item)) return t('cart.stockExceeded', { count: available })
+  return t('cart.stockRemaining', { count: available })
 }
 </script>
