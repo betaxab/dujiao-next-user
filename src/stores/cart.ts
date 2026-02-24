@@ -9,6 +9,7 @@ export interface CartItem {
     skuManualStockTotal?: number
     skuManualStockLocked?: number
     skuManualStockSold?: number
+    skuAutoStockAvailable?: number
     skuStockEnforced?: boolean
     skuStockSnapshotAt?: string
     slug: string
@@ -67,6 +68,7 @@ const loadCartItems = (): CartItem[] => {
                     skuManualStockTotal: normalizeOptionalStockNumber(row.skuManualStockTotal ?? row.sku_manual_stock_total),
                     skuManualStockLocked: normalizeOptionalStockNumber(row.skuManualStockLocked ?? row.sku_manual_stock_locked),
                     skuManualStockSold: normalizeOptionalStockNumber(row.skuManualStockSold ?? row.sku_manual_stock_sold),
+                    skuAutoStockAvailable: normalizeOptionalStockNumber(row.skuAutoStockAvailable ?? row.sku_auto_stock_available),
                     skuStockEnforced: normalizeOptionalBoolean(row.skuStockEnforced ?? row.sku_stock_enforced),
                     skuStockSnapshotAt: normalizeOptionalString(row.skuStockSnapshotAt ?? row.sku_stock_snapshot_at),
                 } as CartItem
@@ -96,6 +98,7 @@ export const useCartStore = defineStore('cart', () => {
             skuManualStockTotal: normalizeOptionalStockNumber(item.skuManualStockTotal),
             skuManualStockLocked: normalizeOptionalStockNumber(item.skuManualStockLocked),
             skuManualStockSold: normalizeOptionalStockNumber(item.skuManualStockSold),
+            skuAutoStockAvailable: normalizeOptionalStockNumber(item.skuAutoStockAvailable),
             skuStockEnforced: normalizeOptionalBoolean(item.skuStockEnforced),
             skuStockSnapshotAt: normalizeOptionalString(item.skuStockSnapshotAt) || new Date().toISOString(),
         }
@@ -116,6 +119,7 @@ export const useCartStore = defineStore('cart', () => {
             existing.skuManualStockTotal = normalizedItem.skuManualStockTotal
             existing.skuManualStockLocked = normalizedItem.skuManualStockLocked
             existing.skuManualStockSold = normalizedItem.skuManualStockSold
+            existing.skuAutoStockAvailable = normalizedItem.skuAutoStockAvailable
             existing.skuStockEnforced = normalizedItem.skuStockEnforced
             existing.skuStockSnapshotAt = normalizedItem.skuStockSnapshotAt
         } else {
@@ -146,6 +150,7 @@ export const useCartStore = defineStore('cart', () => {
         target.skuManualStockTotal = normalizeOptionalStockNumber(target.skuManualStockTotal)
         target.skuManualStockLocked = normalizeOptionalStockNumber(target.skuManualStockLocked)
         target.skuManualStockSold = normalizeOptionalStockNumber(target.skuManualStockSold)
+        target.skuAutoStockAvailable = normalizeOptionalStockNumber(target.skuAutoStockAvailable)
         target.skuStockEnforced = normalizeOptionalBoolean(target.skuStockEnforced)
         target.skuStockSnapshotAt = normalizeOptionalString(target.skuStockSnapshotAt)
         persist()

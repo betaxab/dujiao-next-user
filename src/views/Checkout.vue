@@ -1005,6 +1005,7 @@ const normalizeStockNumber = (value: unknown) => {
 const hasItemStockSnapshot = (item: CartItem) => Boolean(String(item.skuStockSnapshotAt || '').trim())
 
 const shouldEnforceItemStock = (item: CartItem) => {
+  if (item.fulfillmentType === 'auto') return true
   if (item.fulfillmentType !== 'manual') return false
   if (!hasItemStockSnapshot(item)) return false
   if (item.skuStockEnforced === true) return true
@@ -1016,6 +1017,9 @@ const shouldEnforceItemStock = (item: CartItem) => {
 
 const itemAvailableStock = (item: CartItem) => {
   if (!shouldEnforceItemStock(item)) return null
+  if (item.fulfillmentType === 'auto') {
+    return normalizeStockNumber(item.skuAutoStockAvailable)
+  }
   const total = normalizeStockNumber(item.skuManualStockTotal)
   const locked = normalizeStockNumber(item.skuManualStockLocked)
   const sold = normalizeStockNumber(item.skuManualStockSold)

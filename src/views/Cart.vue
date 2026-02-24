@@ -106,7 +106,16 @@
                     >
                       -
                     </button>
-                    <span class="min-w-[32px] text-center text-sm font-mono theme-text-primary">{{ item.quantity }}</span>
+                    <input
+                      type="number"
+                      :id="`cart-qty-${item.productId}`"
+                      :name="`cart-qty-${item.productId}`"
+                      :value="item.quantity"
+                      @change="handleQtyChange(item, $event)"
+                      min="1"
+                      :max="itemMaxQuantity(item)"
+                      class="cart-qty-input w-12 text-center text-sm font-mono theme-text-primary bg-transparent border-none p-0 focus:ring-0 focus:outline-none"
+                    />
                     <button
                       @click="updateQty(item, item.quantity + 1)"
                       :disabled="item.quantity >= itemMaxQuantity(item)"
@@ -245,6 +254,17 @@ const updateQty = (item: CartItem, qty: number) => {
   cartStore.updateQuantity(item.productId, qty, item.skuId)
 }
 
+const handleQtyChange = (item: CartItem, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const value = parseInt(target.value, 10)
+  if (!Number.isFinite(value) || value < 1) {
+    target.value = String(item.quantity)
+    return
+  }
+  updateQty(item, value)
+  target.value = String(item.quantity)
+}
+
 const cartItemKey = (item: CartItem) => `${item.productId}:${normalizeSkuId(item.skuId)}`
 
 const itemSkuDisplay = (item: CartItem) => buildSkuDisplayText({
@@ -263,6 +283,7 @@ const normalizeStockNumber = (value: unknown) => {
 const hasItemStockSnapshot = (item: CartItem) => Boolean(String(item.skuStockSnapshotAt || '').trim())
 
 const shouldEnforceItemStock = (item: CartItem) => {
+  if (item.fulfillmentType === 'auto') return true
   if (item.fulfillmentType !== 'manual') return false
   if (!hasItemStockSnapshot(item)) return false
   if (item.skuStockEnforced === true) return true
@@ -274,6 +295,9 @@ const shouldEnforceItemStock = (item: CartItem) => {
 
 const itemAvailableStock = (item: CartItem) => {
   if (!shouldEnforceItemStock(item)) return null
+  if (item.fulfillmentType === 'auto') {
+    return normalizeStockNumber(item.skuAutoStockAvailable)
+  }
   const total = normalizeStockNumber(item.skuManualStockTotal)
   const locked = normalizeStockNumber(item.skuManualStockLocked)
   const sold = normalizeStockNumber(item.skuManualStockSold)
@@ -299,3 +323,13 @@ onMounted(() => {
   void refreshCartStockSnapshots(cartStore)
 })
 </script>
+<style scoped>
+.cart-qty-input {
+  appearance: textfield;
+}
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+</style>

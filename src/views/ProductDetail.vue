@@ -323,6 +323,7 @@ const isDefaultSkuCode = (sku: any) => {
 
 const shouldEnforceSkuStock = (sku: any) => {
   if (!sku) return false
+  if (product.value?.fulfillment_type === 'auto') return true
   if (product.value?.fulfillment_type !== 'manual') return false
   const total = normalizeStockNumber(sku?.manual_stock_total)
   if (total > 0) return true
@@ -332,6 +333,9 @@ const shouldEnforceSkuStock = (sku: any) => {
 
 const skuAvailableStock = (sku: any) => {
   if (!shouldEnforceSkuStock(sku)) return null
+  if (product.value?.fulfillment_type === 'auto') {
+    return normalizeStockNumber(sku?.auto_stock_available)
+  }
   const total = normalizeStockNumber(sku?.manual_stock_total)
   const locked = normalizeStockNumber(sku?.manual_stock_locked)
   const sold = normalizeStockNumber(sku?.manual_stock_sold)
@@ -540,6 +544,7 @@ const addToCart = () => {
     skuManualStockTotal: normalizeStockNumber(sku?.manual_stock_total),
     skuManualStockLocked: normalizeStockNumber(sku?.manual_stock_locked),
     skuManualStockSold: normalizeStockNumber(sku?.manual_stock_sold),
+    skuAutoStockAvailable: normalizeStockNumber(sku?.auto_stock_available),
     skuStockEnforced: shouldEnforceSkuStock(sku),
     slug: product.value.slug,
     title: product.value.title,
