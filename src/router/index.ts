@@ -80,6 +80,13 @@ const router = createRouter({
             meta: { requiresUserAuth: true }
         },
         {
+            path: '/me/gift-cards',
+            name: 'personal-center-gift-cards',
+            component: () => import('../views/PersonalCenter.vue'),
+            props: { section: 'giftCard' },
+            meta: { requiresUserAuth: true }
+        },
+        {
             path: '/orders/:order_no',
             name: 'order-detail',
             component: () => import('../views/OrderDetail.vue'),

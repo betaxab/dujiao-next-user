@@ -351,6 +351,13 @@ export interface WalletRechargeResult {
     recharge_status?: string
 }
 
+export interface GiftCardRedeemResult {
+    gift_card: any
+    wallet?: WalletAccountData
+    transaction?: WalletTransactionData
+    wallet_delta?: string
+}
+
 export interface CreatePaymentPayload {
     order_id: number
     channel_id?: number
@@ -451,6 +458,11 @@ export const paymentAPI = {
     create: (data: CreatePaymentPayload) => userApi.post<ApiResponse<PaymentCreateResult>>('/payments', data),
     capture: (id: number) => userApi.post<ApiResponse>(`/payments/${id}/capture`),
     latest: (params: any) => userApi.get<ApiResponse<PaymentCreateResult>>('/payments/latest', { params, silentBusinessError: true } as any),
+}
+
+export const giftCardAPI = {
+    redeem: (data: { code: string; captcha_payload?: CaptchaPayload }) =>
+        userApi.post<ApiResponse<GiftCardRedeemResult>>('/gift-cards/redeem', data),
 }
 
 export const walletAPI = {
