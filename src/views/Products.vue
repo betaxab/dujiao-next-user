@@ -46,10 +46,13 @@
               </li>
               <li v-for="category in categories" :key="category.id">
                 <button @click="selectedCategory = category.id"
-                  class="w-full text-left px-4 py-3 rounded-xl transition-all duration-300 border"
+                  class="w-full text-left px-4 py-3 rounded-xl transition-all duration-300 border flex items-center gap-2"
                   :class="selectedCategory === category.id
                     ? 'theme-btn-primary border border-transparent'
                     : 'border-transparent theme-text-secondary hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'">
+                  <img v-if="category.icon" :src="getImageUrl(category.icon)"
+                    :alt="getLocalizedText(category.name)"
+                    class="h-5 w-5 rounded object-cover" />
                   {{ getLocalizedText(category.name) }}
                 </button>
               </li>
@@ -82,6 +85,10 @@
                   </div>
                   <img v-if="product.images && getFirstImageUrl(product.images)" :src="getFirstImageUrl(product.images)"
                     :alt="getLocalizedText(product.title)"
+                    class="w-full h-full object-cover transform transition-transform duration-700 ease-out"
+                    :class="isSoldOut(product) ? 'grayscale brightness-75' : 'group-hover:scale-110'" />
+                  <img v-else-if="product.category?.icon" :src="getImageUrl(product.category.icon)"
+                    :alt="getLocalizedText(product.category?.name)"
                     class="w-full h-full object-cover transform transition-transform duration-700 ease-out"
                     :class="isSoldOut(product) ? 'grayscale brightness-75' : 'group-hover:scale-110'" />
                   <div v-else class="w-full h-full flex items-center justify-center theme-text-muted">
@@ -250,7 +257,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '../stores/app'
 import { productAPI, categoryAPI } from '../api'
-import { getFirstImageUrl } from '../utils/image'
+import { getImageUrl, getFirstImageUrl } from '../utils/image'
 import { debounceAsync } from '../utils/debounce'
 import { amountToCents } from '../utils/money'
 
