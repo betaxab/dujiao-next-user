@@ -43,9 +43,16 @@
           >
             <div class="flex gap-5">
               <div
-                class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border theme-surface-muted"
+                class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-white/10 dark:bg-black/30 sm:h-20 sm:w-20"
               >
-                <img v-if="item.image" :src="item.image" class="h-full w-full object-cover" />
+                <img
+                  v-if="cartItemImage(item)"
+                  :src="cartItemImage(item)"
+                  :alt="getLocalizedText(item.title)"
+                  loading="lazy"
+                  decoding="async"
+                  class="h-full w-full object-cover"
+                />
                 <div v-else class="flex h-full w-full items-center justify-center theme-text-muted">
                   <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -182,6 +189,7 @@ import { useAppStore } from '../stores/app'
 import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
 import { refreshCartStockSnapshots } from '../utils/cartStock'
+import { getImageUrl } from '../utils/image'
 
 const cartStore = useCartStore()
 const appStore = useAppStore()
@@ -273,6 +281,12 @@ const itemSkuDisplay = (item: CartItem) => buildSkuDisplayText({
   fallback: t('productDetail.skuFallback'),
   locale: appStore.locale,
 })
+
+const cartItemImage = (item: CartItem) => {
+  const rawImage = String(item.image || '').trim()
+  if (!rawImage) return ''
+  return getImageUrl(rawImage)
+}
 
 const normalizeStockNumber = (value: unknown) => {
   const numberValue = Number(value)

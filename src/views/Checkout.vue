@@ -48,41 +48,63 @@
                   : 'border-gray-100 bg-gray-50 dark:border-white/10 dark:bg-black/20'"
               >
                 <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <router-link
-                      :to="`/products/${item.slug}`"
-                      class="font-semibold theme-link"
-                    >
-                      {{ getLocalizedText(item.title) }}
-                    </router-link>
-                    <div class="mt-1 text-xs text-gray-500">{{ t('checkout.quantityLabel') }}：{{ item.quantity }}</div>
-                    <div v-if="itemSkuDisplay(item)" class="mt-1 text-xs text-gray-500">{{ t('checkout.skuLabel') }}：{{ itemSkuDisplay(item) }}</div>
-                    <div
-                      v-if="itemStockHint(item)"
-                      class="mt-1 text-xs"
-                      :class="itemStockExceeded(item)
-                        ? 'text-amber-600 dark:text-amber-300'
-                        : 'text-gray-500'"
-                    >
-                      {{ itemStockHint(item) }}
+                  <div class="flex min-w-0 items-start gap-3">
+                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-white/10 dark:bg-black/30 sm:h-20 sm:w-20">
+                      <img
+                        v-if="checkoutItemImage(item)"
+                        :src="checkoutItemImage(item)"
+                        :alt="getLocalizedText(item.title)"
+                        loading="lazy"
+                        decoding="async"
+                        class="h-full w-full object-cover"
+                      />
+                      <div v-else class="flex h-full w-full items-center justify-center text-gray-400 dark:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      <span
-                        class="theme-badge text-xs uppercase tracking-wider"
-                        :class="item.purchaseType === 'guest'
-                          ? 'theme-badge-warning'
-                          : 'theme-badge-success'"
+                    <div class="min-w-0">
+                      <router-link
+                        :to="`/products/${item.slug}`"
+                        class="line-clamp-2 font-semibold theme-link"
                       >
-                        {{ item.purchaseType === 'guest' ? t('productPurchase.guest') : t('productPurchase.member') }}
-                      </span>
-                      <span
-                        class="theme-badge text-xs uppercase tracking-wider"
-                        :class="item.fulfillmentType === 'auto'
-                          ? 'theme-badge-info'
-                          : 'theme-badge-neutral'"
+                        {{ getLocalizedText(item.title) }}
+                      </router-link>
+                      <div class="mt-1 text-xs text-gray-500">{{ t('checkout.quantityLabel') }}：{{ item.quantity }}</div>
+                      <div v-if="itemSkuDisplay(item)" class="mt-1 text-xs text-gray-500">{{ t('checkout.skuLabel') }}：{{ itemSkuDisplay(item) }}</div>
+                      <div
+                        v-if="itemStockHint(item)"
+                        class="mt-1 text-xs"
+                        :class="itemStockExceeded(item)
+                          ? 'text-amber-600 dark:text-amber-300'
+                          : 'text-gray-500'"
                       >
-                        {{ item.fulfillmentType === 'auto' ? t('products.fulfillmentType.auto') : t('products.fulfillmentType.manual') }}
-                      </span>
+                        {{ itemStockHint(item) }}
+                      </div>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        <span
+                          class="theme-badge text-xs uppercase tracking-wider"
+                          :class="item.purchaseType === 'guest'
+                            ? 'theme-badge-warning'
+                            : 'theme-badge-success'"
+                        >
+                          {{ item.purchaseType === 'guest' ? t('productPurchase.guest') : t('productPurchase.member') }}
+                        </span>
+                        <span
+                          class="theme-badge text-xs uppercase tracking-wider"
+                          :class="item.fulfillmentType === 'auto'
+                            ? 'theme-badge-info'
+                            : 'theme-badge-neutral'"
+                        >
+                          {{ item.fulfillmentType === 'auto' ? t('products.fulfillmentType.auto') : t('products.fulfillmentType.manual') }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div class="text-right">
@@ -316,6 +338,7 @@ import { pageAlertClass, type PageAlert } from '../utils/alerts'
 import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
 import { refreshCartStockSnapshots } from '../utils/cartStock'
+import { getImageUrl } from '../utils/image'
 import ImageCaptcha from '../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../components/captcha/TurnstileCaptcha.vue'
 
@@ -390,11 +413,9 @@ interface ManualFormField {
 interface ManualFormProduct {
   itemKey: string
   productId: number
-  skuId: number
-  skuCode: string
-  skuSpecValues?: Record<string, any>
   title: any
   fields: ManualFormField[]
+  skuCount: number
 }
 
 const manualFieldTypes = new Set(['text', 'textarea', 'phone', 'email', 'number', 'select', 'radio', 'checkbox'])
@@ -479,27 +500,36 @@ const normalizeManualFormSchema = (rawSchema: any): ManualFormField[] => {
     .filter(Boolean) as ManualFormField[]
 }
 
-const manualFormProducts = computed<ManualFormProduct[]>(() => cartItems.value
-  .map((item) => {
+const manualFormProducts = computed<ManualFormProduct[]>(() => {
+  const grouped = new Map<number, ManualFormProduct>()
+  cartItems.value.forEach((item) => {
     if (item.fulfillmentType !== 'manual') {
-      return null
+      return
     }
     const fields = normalizeManualFormSchema(item.manualFormSchema)
     if (fields.length === 0) {
-      return null
+      return
     }
-    const skuId = normalizeSkuId(item.skuId)
-    return {
-      itemKey: `${item.productId}:${skuId}`,
-      productId: item.productId,
-      skuId,
-      skuCode: String(item.skuCode || ''),
-      skuSpecValues: item.skuSpecValues,
+    const productId = Number(item.productId)
+    if (!Number.isFinite(productId) || productId <= 0) {
+      return
+    }
+    const normalizedProductId = Math.trunc(productId)
+    const existing = grouped.get(normalizedProductId)
+    if (existing) {
+      existing.skuCount += 1
+      return
+    }
+    grouped.set(normalizedProductId, {
+      itemKey: String(normalizedProductId),
+      productId: normalizedProductId,
       title: item.title,
       fields,
-    }
+      skuCount: 1,
+    })
   })
-  .filter(Boolean) as ManualFormProduct[])
+  return Array.from(grouped.values())
+})
 
 watch(manualFormProducts, (products) => {
   const nextData: Record<string, Record<string, any>> = {}
@@ -632,7 +662,6 @@ const manualFieldError = (itemKey: string, fieldKey: string) => {
 
 const buildManualFormDataPayload = () => {
   const payload: Record<string, any> = {}
-  const productCounter: Record<string, number> = {}
   manualFormProducts.value.forEach((product) => {
     const values = manualFormData.value[product.itemKey] || {}
     const row: Record<string, any> = {}
@@ -653,14 +682,6 @@ const buildManualFormDataPayload = () => {
       }
     })
     payload[product.itemKey] = row
-    const productKey = String(product.productId)
-    productCounter[productKey] = (productCounter[productKey] || 0) + 1
-  })
-  manualFormProducts.value.forEach((product) => {
-    const productKey = String(product.productId)
-    if (productCounter[productKey] === 1) {
-      payload[productKey] = payload[product.itemKey]
-    }
   })
   return payload
 }
@@ -967,16 +988,16 @@ const itemSkuDisplay = (item: CartItem) => buildSkuDisplayText({
   locale: appStore.locale,
 })
 
+const checkoutItemImage = (item: CartItem) => {
+  const rawImage = String(item.image || '').trim()
+  if (!rawImage) return ''
+  return getImageUrl(rawImage)
+}
+
 const manualItemTitle = (manualItem: ManualFormProduct) => {
   const productTitle = getLocalizedText(manualItem.title)
-  const skuText = buildSkuDisplayText({
-    skuCode: manualItem.skuCode,
-    specValues: manualItem.skuSpecValues,
-    fallback: t('productDetail.skuFallback'),
-    locale: appStore.locale,
-  })
-  if (!skuText) return productTitle
-  return `${productTitle} (${skuText})`
+  if (manualItem.skuCount <= 1) return productTitle
+  return `${productTitle} (${t('checkout.manualFormAppliesToSkuCount', { count: manualItem.skuCount })})`
 }
 
 const formatPrice = (amount: any, currency: any) => {
