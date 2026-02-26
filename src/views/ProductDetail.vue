@@ -562,7 +562,7 @@ const buyNow = () => {
   if (!canPurchase.value) return
   addToCart()
   if (purchaseWarning.value) return
-  router.push('/checkout')
+  router.push('/cart')
 }
 
 const goLogin = () => {
