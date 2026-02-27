@@ -13,12 +13,15 @@ const normalizeStockNumber = (value: unknown) => {
   return Math.max(Math.floor(numberValue), 0)
 }
 
-const normalizeSkuCode = (value: unknown) => String(value || '').trim().toUpperCase()
-
-const isDefaultSkuCode = (value: unknown) => {
-  const code = normalizeSkuCode(value)
-  return !code || code === 'DEFAULT'
+const normalizeManualStockTotal = (value: unknown) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return 0
+  const integerValue = Math.floor(numberValue)
+  if (integerValue === -1) return -1
+  return Math.max(integerValue, 0)
 }
+
+const normalizeSkuCode = (value: unknown) => String(value || '').trim().toUpperCase()
 
 const resolveActiveSkus = (product: any) => {
   const rows = Array.isArray(product?.skus) ? product.skus : []
@@ -45,15 +48,14 @@ const resolveMatchedSku = (item: CartItem, activeSkus: any[]) => {
   return null
 }
 
-const shouldEnforceSkuStock = (product: any, sku: any, activeSkus: any[]) => {
+const shouldEnforceSkuStock = (product: any, sku: any) => {
   if (!product || !sku) return false
   const type = String(product?.fulfillment_type || '').trim()
   if (type === 'auto') return true
   if (type !== 'manual') return false
-  const total = normalizeStockNumber(sku?.manual_stock_total)
-  if (total > 0) return true
-  if (!isDefaultSkuCode(sku?.sku_code)) return true
-  return activeSkus.length > 1
+  const total = normalizeManualStockTotal(sku?.manual_stock_total)
+  if (total === -1) return false
+  return true
 }
 
 export const refreshCartStockSnapshots = async (cartStore: CartStoreLike) => {
@@ -94,11 +96,11 @@ export const refreshCartStockSnapshots = async (cartStore: CartStoreLike) => {
     const matchedSku = resolveMatchedSku(item, activeSkus)
     if (!matchedSku) continue
 
-    const manualStockTotal = normalizeStockNumber(matchedSku?.manual_stock_total)
+    const manualStockTotal = normalizeManualStockTotal(matchedSku?.manual_stock_total)
     const manualStockLocked = normalizeStockNumber(matchedSku?.manual_stock_locked)
     const manualStockSold = normalizeStockNumber(matchedSku?.manual_stock_sold)
     const autoStockAvailable = normalizeStockNumber(matchedSku?.auto_stock_available)
-    const skuStockEnforced = shouldEnforceSkuStock(product, matchedSku, activeSkus)
+    const skuStockEnforced = shouldEnforceSkuStock(product, matchedSku)
 
     cartStore.patchItem(item.productId, item.skuId, {
       skuCode: String(matchedSku?.sku_code || item.skuCode || ''),

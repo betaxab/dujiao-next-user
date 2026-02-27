@@ -1023,17 +1023,25 @@ const normalizeStockNumber = (value: unknown) => {
   return Math.max(Math.floor(numberValue), 0)
 }
 
+const normalizeManualStockTotal = (value: unknown) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return 0
+  const integerValue = Math.floor(numberValue)
+  if (integerValue === -1) return -1
+  return Math.max(integerValue, 0)
+}
+
 const hasItemStockSnapshot = (item: CartItem) => Boolean(String(item.skuStockSnapshotAt || '').trim())
 
 const shouldEnforceItemStock = (item: CartItem) => {
   if (item.fulfillmentType === 'auto') return true
   if (item.fulfillmentType !== 'manual') return false
   if (!hasItemStockSnapshot(item)) return false
+  const total = normalizeManualStockTotal(item.skuManualStockTotal)
+  if (total === -1) return false
   if (item.skuStockEnforced === true) return true
-  const code = String(item.skuCode || '').trim().toUpperCase()
-  const total = normalizeStockNumber(item.skuManualStockTotal)
-  if (total > 0) return true
-  return Boolean(code && code !== 'DEFAULT')
+  if (item.skuStockEnforced === false) return false
+  return true
 }
 
 const itemAvailableStock = (item: CartItem) => {
@@ -1041,10 +1049,9 @@ const itemAvailableStock = (item: CartItem) => {
   if (item.fulfillmentType === 'auto') {
     return normalizeStockNumber(item.skuAutoStockAvailable)
   }
-  const total = normalizeStockNumber(item.skuManualStockTotal)
-  const locked = normalizeStockNumber(item.skuManualStockLocked)
-  const sold = normalizeStockNumber(item.skuManualStockSold)
-  return Math.max(total - locked - sold, 0)
+  const total = normalizeManualStockTotal(item.skuManualStockTotal)
+  if (total === -1) return null
+  return total
 }
 
 const itemMaxQuantity = (item: CartItem) => {

@@ -31,11 +31,13 @@ const normalizeSkuId = (value: unknown) => {
 
 const cartIdentity = (item: Pick<CartItem, 'productId' | 'skuId'>) => `${item.productId}:${normalizeSkuId(item.skuId)}`
 
-const normalizeOptionalStockNumber = (value: unknown): number | undefined => {
+const normalizeOptionalStockNumber = (value: unknown, allowUnlimited = false): number | undefined => {
     if (value === undefined || value === null || value === '') return undefined
     const numberValue = Number(value)
     if (!Number.isFinite(numberValue)) return undefined
-    return Math.max(Math.floor(numberValue), 0)
+    const integerValue = Math.floor(numberValue)
+    if (allowUnlimited && integerValue === -1) return -1
+    return Math.max(integerValue, 0)
 }
 
 const normalizeOptionalBoolean = (value: unknown): boolean | undefined => {
@@ -65,7 +67,7 @@ const loadCartItems = (): CartItem[] => {
                     ...(item as CartItem),
                     productId: Math.trunc(productId),
                     skuId: normalizeSkuId(row.skuId),
-                    skuManualStockTotal: normalizeOptionalStockNumber(row.skuManualStockTotal ?? row.sku_manual_stock_total),
+                    skuManualStockTotal: normalizeOptionalStockNumber(row.skuManualStockTotal ?? row.sku_manual_stock_total, true),
                     skuManualStockLocked: normalizeOptionalStockNumber(row.skuManualStockLocked ?? row.sku_manual_stock_locked),
                     skuManualStockSold: normalizeOptionalStockNumber(row.skuManualStockSold ?? row.sku_manual_stock_sold),
                     skuAutoStockAvailable: normalizeOptionalStockNumber(row.skuAutoStockAvailable ?? row.sku_auto_stock_available),
@@ -95,7 +97,7 @@ export const useCartStore = defineStore('cart', () => {
             ...item,
             productId: Math.trunc(Number(item.productId)),
             skuId: normalizeSkuId(item.skuId),
-            skuManualStockTotal: normalizeOptionalStockNumber(item.skuManualStockTotal),
+            skuManualStockTotal: normalizeOptionalStockNumber(item.skuManualStockTotal, true),
             skuManualStockLocked: normalizeOptionalStockNumber(item.skuManualStockLocked),
             skuManualStockSold: normalizeOptionalStockNumber(item.skuManualStockSold),
             skuAutoStockAvailable: normalizeOptionalStockNumber(item.skuAutoStockAvailable),
@@ -147,7 +149,7 @@ export const useCartStore = defineStore('cart', () => {
         Object.assign(target, patch)
         target.productId = Math.trunc(Number(target.productId))
         target.skuId = normalizeSkuId(target.skuId)
-        target.skuManualStockTotal = normalizeOptionalStockNumber(target.skuManualStockTotal)
+        target.skuManualStockTotal = normalizeOptionalStockNumber(target.skuManualStockTotal, true)
         target.skuManualStockLocked = normalizeOptionalStockNumber(target.skuManualStockLocked)
         target.skuManualStockSold = normalizeOptionalStockNumber(target.skuManualStockSold)
         target.skuAutoStockAvailable = normalizeOptionalStockNumber(target.skuAutoStockAvailable)

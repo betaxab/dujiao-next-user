@@ -316,19 +316,21 @@ const normalizeStockNumber = (value: unknown) => {
   return Math.max(Math.floor(numberValue), 0)
 }
 
-const isDefaultSkuCode = (sku: any) => {
-  const code = String(sku?.sku_code || '').trim().toUpperCase()
-  return !code || code === 'DEFAULT'
+const normalizeManualStockTotal = (value: unknown) => {
+  const numberValue = Number(value)
+  if (!Number.isFinite(numberValue)) return 0
+  const integerValue = Math.floor(numberValue)
+  if (integerValue === -1) return -1
+  return Math.max(integerValue, 0)
 }
 
 const shouldEnforceSkuStock = (sku: any) => {
   if (!sku) return false
   if (product.value?.fulfillment_type === 'auto') return true
   if (product.value?.fulfillment_type !== 'manual') return false
-  const total = normalizeStockNumber(sku?.manual_stock_total)
-  if (total > 0) return true
-  if (!isDefaultSkuCode(sku)) return true
-  return activeSkus.value.length > 1
+  const total = normalizeManualStockTotal(sku?.manual_stock_total)
+  if (total === -1) return false
+  return true
 }
 
 const skuAvailableStock = (sku: any) => {
@@ -336,10 +338,9 @@ const skuAvailableStock = (sku: any) => {
   if (product.value?.fulfillment_type === 'auto') {
     return normalizeStockNumber(sku?.auto_stock_available)
   }
-  const total = normalizeStockNumber(sku?.manual_stock_total)
-  const locked = normalizeStockNumber(sku?.manual_stock_locked)
-  const sold = normalizeStockNumber(sku?.manual_stock_sold)
-  return Math.max(total - locked - sold, 0)
+  const total = normalizeManualStockTotal(sku?.manual_stock_total)
+  if (total === -1) return null
+  return total
 }
 
 const isSkuPurchasable = (sku: any) => {
@@ -541,7 +542,7 @@ const addToCart = () => {
     skuId: normalizeSkuId(sku?.id),
     skuCode: String(sku?.sku_code || ''),
     skuSpecValues: (sku?.spec_values && typeof sku.spec_values === 'object') ? sku.spec_values : undefined,
-    skuManualStockTotal: normalizeStockNumber(sku?.manual_stock_total),
+    skuManualStockTotal: normalizeManualStockTotal(sku?.manual_stock_total),
     skuManualStockLocked: normalizeStockNumber(sku?.manual_stock_locked),
     skuManualStockSold: normalizeStockNumber(sku?.manual_stock_sold),
     skuAutoStockAvailable: normalizeStockNumber(sku?.auto_stock_available),
