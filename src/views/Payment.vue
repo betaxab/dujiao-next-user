@@ -1212,6 +1212,8 @@ const providerTypeLabel = (value?: string) => {
   const map: Record<string, string> = {
     official: t('payment.providerTypes.official'),
     epay: t('payment.providerTypes.epay'),
+    epusdt: t('payment.providerTypes.epusdt'),
+    tokenpay: t('payment.providerTypes.tokenpay'),
   }
   if (!value) return '-'
   return map[value] || value
@@ -1225,6 +1227,10 @@ const channelTypeLabel = (value?: string) => {
     qqpay: t('payment.channelTypes.qqpay'),
     paypal: t('payment.channelTypes.paypal'),
     stripe: t('payment.channelTypes.stripe'),
+    usdt: t('payment.channelTypes.usdt'),
+    'usdt-trc20': t('payment.channelTypes.usdtTrc20'),
+    'usdc-trc20': t('payment.channelTypes.usdcTrc20'),
+    trx: t('payment.channelTypes.trx'),
   }
   if (!value) return '-'
   return map[value] || value
