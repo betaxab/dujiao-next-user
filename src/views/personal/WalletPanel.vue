@@ -113,7 +113,10 @@
           <div class="flex items-center justify-center">
             <img :src="qrImageUrl" alt="Recharge QR" class="h-52 w-52 object-contain" />
           </div>
-          <div class="mt-3 text-xs theme-text-muted break-all">{{ currentRechargePayment.qr_code }}</div>
+          <div v-if="qrUsingPayLinkFallback" class="mt-3 text-xs theme-text-muted">
+            {{ t('payment.qrFallbackHint') }}
+          </div>
+          <div class="mt-3 text-xs theme-text-muted break-all">{{ qrDisplayContent }}</div>
         </div>
         <div class="rounded-xl border theme-surface-soft p-4">
           <div class="text-xs theme-text-muted">{{ t('personalCenter.wallet.paymentChannelLabel') }}</div>
@@ -281,11 +284,20 @@ const formatMoney = (amount?: string, currency?: string) => {
 
 const balanceDisplay = computed(() => formatMoney(wallet.value?.balance, String(appStore.config?.currency || 'CNY')))
 const payLink = computed(() => String(currentRechargePayment.value?.pay_url || '').trim())
+const interactionMode = computed(() => String(currentRechargePayment.value?.interaction_mode || '').toLowerCase())
+const qrCodeContent = computed(() => String(currentRechargePayment.value?.qr_code || '').trim())
+const qrFallbackContent = computed(() => {
+  if (interactionMode.value === 'redirect') return ''
+  if (qrCodeContent.value) return ''
+  return payLink.value
+})
+const qrDisplayContent = computed(() => qrCodeContent.value || qrFallbackContent.value)
+const qrUsingPayLinkFallback = computed(() => Boolean(!qrCodeContent.value && qrFallbackContent.value))
 const qrImageUrl = ref('')
 const qrRenderVersion = ref(0)
 
 const renderQRCodeImage = async () => {
-  const qr = String(currentRechargePayment.value?.qr_code || '').trim()
+  const qr = qrDisplayContent.value
   const currentVersion = qrRenderVersion.value + 1
   qrRenderVersion.value = currentVersion
   if (!qr) {
@@ -582,7 +594,7 @@ watch(
 )
 
 watch(
-  () => currentRechargePayment.value?.qr_code,
+  () => qrDisplayContent.value,
   () => {
     void renderQRCodeImage()
   },

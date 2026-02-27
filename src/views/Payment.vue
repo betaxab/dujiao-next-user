@@ -85,6 +85,9 @@
                 class="theme-surface-soft border rounded-2xl p-6 flex flex-col items-center justify-center text-center">
                 <div class="text-sm theme-text-muted mb-4">{{ t('payment.qrTitle') }}</div>
                 <img :src="qrImageUrl" alt="QR Code" class="w-56 h-56 object-contain" />
+                <div v-if="qrUsingPayLinkFallback" class="mt-3 text-xs theme-text-muted">
+                  {{ t('payment.qrFallbackHint') }}
+                </div>
               </div>
 
               <div v-else class="theme-surface-soft border rounded-2xl p-6">
@@ -319,6 +322,9 @@
               <div class="text-sm theme-text-secondary space-y-3">
                 <div class="theme-text-primary font-semibold">{{ t('payment.qrTitle') }}</div>
                 <div>{{ t('payment.qrTip') }}</div>
+                <div v-if="qrUsingPayLinkFallback" class="text-xs theme-text-muted">
+                  {{ t('payment.qrFallbackHint') }}
+                </div>
                 <div v-if="paymentResult.pay_url" class="pt-2 flex flex-wrap items-center gap-2">
                   <button @click="handleCopyPayLink"
                     class="px-3 py-1.5 rounded-lg border theme-btn-secondary font-bold text-xs">
@@ -554,23 +560,28 @@ const interactionLabel = computed(() => {
   return mode
 })
 
-const showQRCode = computed(() => {
-  const mode = String(paymentResult.value?.interaction_mode || '').toLowerCase()
-  return mode === 'qr' && Boolean(paymentResult.value?.qr_code)
-})
+const interactionMode = computed(() => String(paymentResult.value?.interaction_mode || '').toLowerCase())
 
 const showPayLink = computed(() => {
-  const mode = String(paymentResult.value?.interaction_mode || '').toLowerCase()
-  return mode === 'redirect' || Boolean(paymentResult.value?.pay_url)
+  return interactionMode.value === 'redirect' || Boolean(payLink.value)
 })
 
 const payLink = computed(() => String(paymentResult.value?.pay_url || '').trim())
+const qrCodeContent = computed(() => String(paymentResult.value?.qr_code || '').trim())
+const qrFallbackContent = computed(() => {
+  if (interactionMode.value !== 'qr') return ''
+  if (qrCodeContent.value) return ''
+  return payLink.value
+})
+const qrDisplayContent = computed(() => qrCodeContent.value || qrFallbackContent.value)
+const qrUsingPayLinkFallback = computed(() => Boolean(!qrCodeContent.value && qrFallbackContent.value))
+const showQRCode = computed(() => interactionMode.value === 'qr' && Boolean(qrDisplayContent.value))
 
 const qrImageUrl = ref('')
 const qrRenderVersion = ref(0)
 
 const renderQRCodeImage = async () => {
-  const qr = String(paymentResult.value?.qr_code || '').trim()
+  const qr = qrDisplayContent.value
   const currentVersion = qrRenderVersion.value + 1
   qrRenderVersion.value = currentVersion
   if (!qr) {
@@ -601,7 +612,7 @@ const renderQRCodeImage = async () => {
 }
 
 watch(
-  () => paymentResult.value?.qr_code,
+  () => qrDisplayContent.value,
   () => {
     void renderQRCodeImage()
   },
