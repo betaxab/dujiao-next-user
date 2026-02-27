@@ -44,6 +44,12 @@ const messages = {
             terms: '服务条款',
             privacy: '隐私政策',
         },
+        notFoundPage: {
+            title: '页面不存在',
+            description: '你访问的页面可能已移动、删除，或链接地址有误。',
+            backHome: '返回首页',
+            backPrevious: '返回上一页',
+        },
         home: {
             hero: {
                 title: 'Dujiao-Next · D&N',
@@ -749,6 +755,12 @@ const messages = {
             terms: '服務條款',
             privacy: '隱私政策',
         },
+        notFoundPage: {
+            title: '頁面不存在',
+            description: '你訪問的頁面可能已移動、刪除，或連結地址有誤。',
+            backHome: '返回首頁',
+            backPrevious: '返回上一頁',
+        },
         home: {
             hero: {
                 title: 'Dujiao-Next · D&N',
@@ -1453,6 +1465,12 @@ const messages = {
             rights: 'All rights reserved',
             terms: 'Terms of Service',
             privacy: 'Privacy Policy',
+        },
+        notFoundPage: {
+            title: 'Page Not Found',
+            description: 'The page you are looking for may have been moved, deleted, or the URL is incorrect.',
+            backHome: 'Back to Home',
+            backPrevious: 'Go Back',
         },
         home: {
             hero: {
