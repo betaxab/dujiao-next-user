@@ -46,7 +46,8 @@ const messages = {
         },
         notFoundPage: {
             title: '页面不存在',
-            description: '你访问的页面可能已移动、删除，或链接地址有误。',
+            description: '你访问的页面可能已移动、删除，或链接地址有误。你可以继续浏览 {site} 的其他内容。',
+            quickLinksTitle: '你可能会用到',
             backHome: '返回首页',
             backPrevious: '返回上一页',
         },
@@ -757,7 +758,8 @@ const messages = {
         },
         notFoundPage: {
             title: '頁面不存在',
-            description: '你訪問的頁面可能已移動、刪除，或連結地址有誤。',
+            description: '你訪問的頁面可能已移動、刪除，或連結地址有誤。你可以繼續瀏覽 {site} 的其他內容。',
+            quickLinksTitle: '你可能會用到',
             backHome: '返回首頁',
             backPrevious: '返回上一頁',
         },
@@ -1468,7 +1470,8 @@ const messages = {
         },
         notFoundPage: {
             title: 'Page Not Found',
-            description: 'The page you are looking for may have been moved, deleted, or the URL is incorrect.',
+            description: 'The page you are looking for may have been moved, deleted, or the URL is incorrect. You can continue exploring other sections of {site}.',
+            quickLinksTitle: 'Quick Links',
             backHome: 'Back to Home',
             backPrevious: 'Go Back',
         },
