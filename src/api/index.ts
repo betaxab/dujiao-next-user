@@ -55,6 +55,12 @@ api.interceptors.response.use(
         if (typeof data.status_code !== 'undefined') {
             // 检查业务状态码
             if (data.status_code !== 0) {
+                if (data.status_code === 401) {
+                    localStorage.removeItem('user_token')
+                    localStorage.removeItem('user_profile')
+                    window.location.href = '/auth/login'
+                    return Promise.reject(new Error(t('common.api.unauthorized')))
+                }
                 // 业务错误，显示错误消息
                 const fallbackMessage = t('common.api.requestFailed')
                 const errorMessage = data.msg || fallbackMessage
@@ -142,6 +148,12 @@ userApi.interceptors.response.use(
 
         if (typeof data.status_code !== 'undefined') {
             if (data.status_code !== 0) {
+                if (data.status_code === 401) {
+                    localStorage.removeItem('user_token')
+                    localStorage.removeItem('user_profile')
+                    window.location.href = '/auth/login'
+                    return Promise.reject(new Error(t('common.api.unauthorized')))
+                }
                 const fallbackMessage = t('common.api.requestFailed')
                 const errorMessage = data.msg || fallbackMessage
                 const silentBusinessError = Boolean((response.config as any)?.silentBusinessError)
