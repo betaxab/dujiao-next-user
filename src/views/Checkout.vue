@@ -339,6 +339,7 @@ import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
 import { refreshCartStockSnapshots } from '../utils/cartStock'
 import { getImageUrl } from '../utils/image'
+import { getAffiliateCode, getAffiliateVisitorKey } from '../utils/affiliate'
 import ImageCaptcha from '../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../components/captcha/TurnstileCaptcha.vue'
 
@@ -800,6 +801,8 @@ const buildItemsPayload = () => cartItems.value.map(item => ({
 
 const buildOrderPayload = () => ({
   coupon_code: normalizedCouponCode.value || undefined,
+  affiliate_code: getAffiliateCode() || undefined,
+  affiliate_visitor_key: getAffiliateVisitorKey() || undefined,
   items: buildItemsPayload(),
   manual_form_data: buildManualFormDataPayload(),
 })

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserAuthStore } from '../stores/userAuth'
 import { useAppStore } from '../stores/app'
+import { captureAffiliateFromRoute } from '../utils/affiliate'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,6 +88,13 @@ const router = createRouter({
             meta: { requiresUserAuth: true }
         },
         {
+            path: '/me/affiliate',
+            name: 'personal-center-affiliate',
+            component: () => import('../views/PersonalCenter.vue'),
+            props: { section: 'affiliate' },
+            meta: { requiresUserAuth: true }
+        },
+        {
             path: '/orders/:order_no',
             name: 'order-detail',
             component: () => import('../views/OrderDetail.vue'),
@@ -163,6 +171,7 @@ const router = createRouter({
 // Navigation Guard
 router.beforeEach(async (to, _from, next) => {
     const userAuthStore = useUserAuthStore()
+    void captureAffiliateFromRoute(to)
 
     if (to.meta.requiresUserAuth) {
         if (!userAuthStore.isAuthenticated) {

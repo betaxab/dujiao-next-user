@@ -358,6 +358,55 @@ export interface GiftCardRedeemResult {
     wallet_delta?: string
 }
 
+export interface AffiliateDashboardData {
+    opened: boolean
+    affiliate_code: string
+    promotion_path: string
+    click_count: number
+    valid_order_count: number
+    conversion_rate: number
+    pending_commission: string
+    available_commission: string
+    withdrawn_commission: string
+}
+
+export interface AffiliateCommissionData {
+    id: number
+    affiliate_profile_id: number
+    order_id: number
+    commission_type: string
+    base_amount: string
+    rate_percent: string
+    commission_amount: string
+    status: string
+    confirm_at?: string
+    available_at?: string
+    invalid_reason?: string
+    created_at: string
+    order?: {
+        id: number
+        order_no: string
+    }
+}
+
+export interface AffiliateWithdrawData {
+    id: number
+    affiliate_profile_id: number
+    amount: string
+    channel: string
+    account: string
+    status: string
+    reject_reason?: string
+    created_at: string
+    processed_at?: string
+}
+
+export interface AffiliateWithdrawApplyPayload {
+    amount: string
+    channel: string
+    account: string
+}
+
 export interface CreatePaymentPayload {
     order_id: number
     channel_id?: number
@@ -473,4 +522,15 @@ export const walletAPI = {
         userApi.get<ApiResponse<WalletRechargeResult>>(`/wallet/recharges/${encodeURIComponent(rechargeNo)}`),
     captureRechargePayment: (paymentID: number) =>
         userApi.post<ApiResponse<WalletRechargeResult>>(`/wallet/recharge/payments/${paymentID}/capture`),
+}
+
+export const affiliateAPI = {
+    trackClick: (data: { affiliate_code: string; visitor_key?: string; landing_path?: string; referrer?: string }) =>
+        api.post<ApiResponse<{ ok: boolean }>>('/public/affiliate/click', data),
+    open: () => userApi.post<ApiResponse>('/affiliate/open'),
+    dashboard: () => userApi.get<ApiResponse<AffiliateDashboardData>>('/affiliate/dashboard'),
+    commissions: (params?: any) => userApi.get<ApiResponse<AffiliateCommissionData[]>>('/affiliate/commissions', { params }),
+    withdraws: (params?: any) => userApi.get<ApiResponse<AffiliateWithdrawData[]>>('/affiliate/withdraws', { params }),
+    applyWithdraw: (data: AffiliateWithdrawApplyPayload) =>
+        userApi.post<ApiResponse<AffiliateWithdrawData>>('/affiliate/withdraws', data),
 }
