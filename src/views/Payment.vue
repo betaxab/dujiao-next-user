@@ -241,10 +241,7 @@
             <div v-if="!configReady" class="text-sm theme-text-muted">
               {{ t('common.loading') }}
             </div>
-            <div v-else-if="channels.length === 0" class="text-sm theme-text-muted">
-              {{ t('payment.channelEmpty') }}
-            </div>
-            <div v-else>
+            <template v-else>
               <div
                 v-if="showBalanceOption"
                 class="mb-4 rounded-xl border p-4 theme-surface-soft"
@@ -285,7 +282,7 @@
                   </span>
                 </div>
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-if="channels.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button v-for="channel in channels" :key="channel.id" @click="selectedChannelId = channel.id"
                   class="text-left border rounded-xl p-4 transition-colors"
                   :class="selectedChannelId === channel.id ? 'theme-selected-surface' : 'theme-interactive-surface'">
@@ -300,7 +297,13 @@
                     channelTypeLabel(channel.channel_type) }}</div>
               </button>
               </div>
-            </div>
+              <div v-else-if="showBalanceOption" class="text-sm theme-text-muted">
+                {{ t('payment.channelEmptyUseBalance') }}
+              </div>
+              <div v-else class="text-sm theme-text-muted">
+                {{ t('payment.channelEmpty') }}
+              </div>
+            </template>
           </div>
 
           <div v-if="paymentResult"
@@ -370,6 +373,12 @@
           >
             <div class="font-semibold">{{ t('payment.methodLabel') }}：{{ selectedChannel.name }}</div>
             <div class="mt-1">{{ providerTypeLabel(selectedChannel.provider_type) }} / {{ channelTypeLabel(selectedChannel.channel_type) }}</div>
+          </div>
+          <div
+            v-else-if="!requiresOnlineChannel && !orderExpired && !orderCanceled"
+            class="mb-4 rounded-lg border p-3 text-xs theme-alert-success"
+          >
+            {{ t('payment.walletPayOnly') }}
           </div>
           <div
             v-else-if="requiresOnlineChannel && !orderExpired && !orderCanceled"
