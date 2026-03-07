@@ -367,6 +367,9 @@ const messages = {
                 telegramOidcBindHint: '将跳转到 Telegram 完成授权后返回',
                 telegramOidcBindFailed: 'Telegram 绑定失败，请重试',
                 telegramBoundOk: 'Telegram 绑定成功',
+                bindEmailRequiredTitle: '需要绑定邮箱',
+                bindEmailRequiredDesc: '为了您的账户安全，请绑定并验证您的电子邮箱。',
+                bindEmail: '绑定邮箱',
                 twofa: {
                     title: '两步验证 (2FA)',
                     subtitle: '使用身份验证器（如 Google Authenticator、1Password 等）为账号增加额外安全保护。',
@@ -1500,6 +1503,9 @@ const messages = {
                 telegramOidcBindHint: '將跳轉到 Telegram 完成授權後返回',
                 telegramOidcBindFailed: 'Telegram 綁定失敗，請重試',
                 telegramBoundOk: 'Telegram 綁定成功',
+                bindEmailRequiredTitle: '需要綁定信箱',
+                bindEmailRequiredDesc: '為了您的帳戶安全，請綁定並驗證您的電子信箱。',
+                bindEmail: '綁定信箱',
                 twofa: {
                     title: '兩步驟驗證 (2FA)',
                     subtitle: '使用驗證器（如 Google Authenticator、1Password 等）為帳號增加額外保護。',
@@ -2592,6 +2598,9 @@ const messages = {
                 telegramOidcBindHint: 'You will be redirected to Telegram to authorize and then return.',
                 telegramOidcBindFailed: 'Failed to link Telegram, please try again.',
                 telegramBoundOk: 'Telegram linked successfully',
+                bindEmailRequiredTitle: 'Bind Email Required',
+                bindEmailRequiredDesc: 'To ensure your account security, please bind and verify your email address.',
+                bindEmail: 'Bind Email',
                 twofa: {
                     title: 'Two-Factor Authentication (2FA)',
                     subtitle: 'Add an extra layer of security with an authenticator app such as Google Authenticator or 1Password.',
