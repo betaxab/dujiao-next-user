@@ -10,6 +10,7 @@
     </main>
     <Footer />
     <Loading :loading="appStore.loading || appStore.navigating" />
+    <EmailBindingModal />
     <Toast />
     <BackToTop />
     <MobileBottomNav />
@@ -22,6 +23,7 @@ import { useAppStore } from './stores/app'
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
 import Loading from './components/Loading.vue'
+import EmailBindingModal from './components/EmailBindingModal.vue'
 import Toast from './components/Toast.vue'
 import BackToTop from './components/BackToTop.vue'
 import MobileBottomNav from './components/MobileBottomNav.vue'

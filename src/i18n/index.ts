@@ -311,6 +311,9 @@ const messages = {
                 telegramUnbindDisabledTip: '当前账号尚未绑定真实邮箱，暂不允许解绑 Telegram',
                 telegramWidgetLoadFailed: 'Telegram 登录组件加载失败，请刷新后重试',
                 telegramInvalidPayload: 'Telegram 返回参数无效，请重试',
+                bindEmailRequiredTitle: '需要绑定邮箱',
+                bindEmailRequiredDesc: '为了您的账户安全，请绑定并验证您的电子邮箱。',
+                bindEmail: '绑定邮箱',
             },
             wallet: {
                 title: '我的钱包',
@@ -1221,6 +1224,9 @@ const messages = {
                 telegramUnbindDisabledTip: '目前帳號尚未綁定真實信箱，暫不允許解除綁定 Telegram',
                 telegramWidgetLoadFailed: 'Telegram 登入元件載入失敗，請重新整理後重試',
                 telegramInvalidPayload: 'Telegram 回傳參數無效，請重試',
+                bindEmailRequiredTitle: '需要綁定信箱',
+                bindEmailRequiredDesc: '為了您的帳戶安全，請綁定並驗證您的電子信箱。',
+                bindEmail: '綁定信箱',
             },
             wallet: {
                 title: '我的錢包',
@@ -2106,6 +2112,9 @@ const messages = {
                 telegramUnbindDisabledTip: 'Bind a real email before unbinding Telegram',
                 telegramWidgetLoadFailed: 'Failed to load Telegram widget, please refresh and retry',
                 telegramInvalidPayload: 'Invalid Telegram response, please retry',
+                bindEmailRequiredTitle: 'Bind Email Required',
+                bindEmailRequiredDesc: 'To ensure your account security, please bind and verify your email address.',
+                bindEmail: 'Bind Email',
             },
             wallet: {
                 title: 'My Wallet',

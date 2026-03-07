@@ -278,6 +278,7 @@ export interface UserLoginLogItem {
 export interface SendChangeEmailCodePayload {
     kind: 'old' | 'new'
     new_email?: string
+    captcha_payload?: CaptchaPayload
 }
 
 export interface ChangeEmailPayload {
