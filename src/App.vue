@@ -32,6 +32,7 @@
     </template>
 
     <Loading :loading="appStore.loading" />
+    <EmailBindingModal />
     <Toast />
     <ConfirmDialog />
   </div>
@@ -45,6 +46,7 @@ import { getActiveTemplate, hasTemplateHint, rememberTemplate } from './template
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
 import Loading from './components/Loading.vue'
+import EmailBindingModal from './components/EmailBindingModal.vue'
 import Toast from './components/Toast.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
