@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { userAuthAPI } from '../api'
+import { userAuthAPI, userProfileAPI } from '../api'
 
 export const useUserAuthStore = defineStore('user-auth', () => {
     const router = useRouter()
@@ -123,6 +123,16 @@ export const useUserAuthStore = defineStore('user-auth', () => {
         loading.value = true
         try {
             const response = await userAuthAPI.telegramLogin(payload)
+
+            try {
+                const profileRes = await userProfileAPI.current()
+                if (profileRes?.data?.data) {
+                    syncUserProfile(profileRes.data.data)
+                }
+            } catch (e) {
+                console.error('Failed to sync profile after telegram login', e)
+            }
+
             return handleLoginResponse(response.data.data)
         } finally {
             loading.value = false
@@ -143,6 +153,16 @@ export const useUserAuthStore = defineStore('user-auth', () => {
         loading.value = true
         try {
             const response = await userAuthAPI.telegramMiniAppLogin({ init_data: initData })
+
+            try {
+                const profileRes = await userProfileAPI.current()
+                if (profileRes?.data?.data) {
+                    syncUserProfile(profileRes.data.data)
+                }
+            } catch (e) {
+                console.error('Failed to sync profile after telegram miniapp login', e)
+            }
+
             return handleLoginResponse(response.data.data)
         } finally {
             loading.value = false
