@@ -8,7 +8,7 @@ import { useUserAuthStore } from '../stores/userAuth'
 import { guestOrderAPI, userOrderAPI, walletAPI, type CaptchaPayload } from '../api'
 import { debounceAsync } from '../utils/debounce'
 import { type PageAlert } from '../utils/alerts'
-import { amountToCents, basisPointsToPercent, centsToAmount, parseInteger, rateToBasisPoints } from '../utils/money'
+import { amountToCents, centsToAmount, parseInteger } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
 import { refreshCartStockSnapshots, cartItemPurchaseLimit as itemPurchaseLimit, cartItemPurchaseMin as itemPurchaseMin } from '../utils/cartStock'
 import { getImageUrl } from '../utils/image'
@@ -72,52 +72,10 @@ export function useCheckout() {
   const previewRequestId = ref(0)
   const couponRefreshing = ref(false)
   const syncingStock = ref(false)
-  const orderPaymentChannels = ref<any[]>([])
-  const orderPaymentChannelsRequestId = ref(0)
-
   // Payment state
-  const selectedChannelId = ref<number | null>(null)
   const useBalance = ref(false)
   const walletLoading = ref(false)
   const walletBalance = ref('0')
-
-  // Payment channels
-  const paymentChannels = computed(() => {
-    const list = userAuthStore.isAuthenticated
-      ? orderPaymentChannels.value
-      : appStore.config?.payment_channels
-    if (!Array.isArray(list)) return []
-    let filtered = list.filter((channel: any) => {
-      const providerType = String(channel?.provider_type || '').toLowerCase()
-      const channelType = String(channel?.channel_type || '').toLowerCase()
-      if (providerType === 'epay') {
-        return ['wechat', 'wxpay', 'alipay', 'qqpay'].includes(channelType)
-      }
-      return true
-    })
-    // 按购物车中商品允许的支付渠道交集过滤
-    const items = cartItems.value
-    if (items.length > 0) {
-      let intersectionArr: number[] | null = null
-      for (const item of items) {
-        const ids = item.paymentChannelIds
-        if (!Array.isArray(ids) || ids.length === 0) continue
-        const idSet = new Set(ids.map(Number))
-        if (intersectionArr === null) {
-          intersectionArr = [...idSet]
-        } else {
-          intersectionArr = intersectionArr.filter((id) => idSet.has(id))
-        }
-      }
-      if (intersectionArr !== null && intersectionArr.length > 0) {
-        const allowedSet = new Set(intersectionArr)
-        filtered = filtered.filter((ch: any) => allowedSet.has(Number(ch?.id)))
-      } else if (intersectionArr !== null) {
-        filtered = []
-      }
-    }
-    return filtered
-  })
 
   const walletOnlyPayment = computed(() => !!appStore.config?.wallet_only_payment)
   // 分销白标店内后端会清零优惠券/促销/会员/批发等所有折扣（reseller 定价为固定加价），
@@ -143,81 +101,6 @@ export function useCheckout() {
     if (!useBalance.value) return true
     return expectedOnlinePayCents.value > 0
   })
-
-  const channelLimitMeta = (channel?: any) => {
-    const minCents = amountToCents(String(channel?.min_amount ?? ''))
-    const maxCents = amountToCents(String(channel?.max_amount ?? ''))
-    return {
-      minCents,
-      maxCents,
-      hasMin: minCents !== null && minCents > 0,
-      hasMax: maxCents !== null && maxCents > 0,
-      hideAmountOutRange: Boolean(channel?.hide_amount_out_range),
-    }
-  }
-
-  const isChannelDisabledForAmount = (channel?: any) => {
-    if (!requiresOnlineChannel.value) return false
-    const targetAmount = expectedOnlinePayCents.value
-    if (targetAmount <= 0) return false
-
-    const meta = channelLimitMeta(channel)
-    if (!meta.hasMin && !meta.hasMax) return false
-
-    const lessThanMin = meta.hasMin && meta.minCents !== null && targetAmount < meta.minCents
-    const greaterThanMax = meta.hasMax && meta.maxCents !== null && targetAmount > meta.maxCents
-    if (!lessThanMin && !greaterThanMax) return false
-
-    // 仅在“超出区间隐藏”未开启时，展示但置灰。
-    return !meta.hideAmountOutRange
-  }
-
-  const channelAmountLimitHint = (channel?: any) => {
-    const meta = channelLimitMeta(channel)
-    if (meta.hasMin && meta.hasMax && meta.minCents !== null && meta.maxCents !== null) {
-      return t('checkout.channelAmountLimitHint', {
-        min: formatPrice(centsToAmount(meta.minCents), previewCurrency.value),
-        max: formatPrice(centsToAmount(meta.maxCents), previewCurrency.value),
-      })
-    }
-    if (meta.hasMin && meta.minCents !== null) {
-      return t('checkout.channelAmountMinHint', {
-        min: formatPrice(centsToAmount(meta.minCents), previewCurrency.value),
-      })
-    }
-    if (meta.hasMax && meta.maxCents !== null) {
-      return t('checkout.channelAmountMaxHint', {
-        max: formatPrice(centsToAmount(meta.maxCents), previewCurrency.value),
-      })
-    }
-    return ''
-  }
-
-  const handleSelectChannel = (channel?: any) => {
-    if (!channel || isChannelDisabledForAmount(channel)) return
-    selectedChannelId.value = Number(channel.id) || null
-  }
-
-  const selectedChannelAmountHint = computed(() => {
-    const channel = paymentChannels.value.find((item: any) => Number(item?.id) === Number(selectedChannelId.value))
-    if (!channel) return ''
-    if (!isChannelDisabledForAmount(channel)) return ''
-    return channelAmountLimitHint(channel)
-  })
-
-  const formatChannelFeeRate = (channel?: any) => {
-    const bp = rateToBasisPoints(channel?.fee_rate)
-    if (bp === null) return '0.00%'
-    return `${basisPointsToPercent(bp)}%`
-  }
-
-  const formatChannelFixedFee = (channel?: any) => {
-    const fixed = channel?.fixed_fee
-    if (fixed === null || fixed === undefined || fixed === '' || Number(fixed) === 0) {
-      return formatPrice('0.00', previewCurrency.value)
-    }
-    return formatPrice(String(fixed), previewCurrency.value)
-  }
 
   const totalAmount = computed(() => {
     const totalCents = cartItems.value.reduce((sum, item) => {
@@ -583,8 +466,6 @@ export function useCheckout() {
     if (cartItems.value.some((item) => itemStockExceeded(item))) return false
     if (cartItems.value.some((item) => itemMinNotMet(item))) return false
     if (walletOnlyPayment.value && expectedOnlinePayCents.value > 0) return false
-    if (!walletOnlyPayment.value && requiresOnlineChannel.value && !selectedChannelId.value) return false
-    if (requiresOnlineChannel.value && selectedChannelAmountHint.value) return false
     if (userAuthStore.isAuthenticated) return true
     if (checkoutMode.value !== 'guest') return false
     if (!guestEmail.value.trim() || !guestPassword.value.trim() || !guestEmailValid.value) return false
@@ -613,8 +494,6 @@ export function useCheckout() {
       return t('cart.minPurchaseNotMet', { count: itemPurchaseMin(minBlockedItem) })
     }
     if (walletOnlyPayment.value && expectedOnlinePayCents.value > 0) return t('payment.walletInsufficientHint')
-    if (!walletOnlyPayment.value && requiresOnlineChannel.value && !selectedChannelId.value) return t('checkout.errors.selectPayment')
-    if (requiresOnlineChannel.value && selectedChannelAmountHint.value) return selectedChannelAmountHint.value
     if (userAuthStore.isAuthenticated) return ''
     if (checkoutMode.value !== 'guest') return t('checkout.errors.loginOrGuest')
     if (!guestEmail.value.trim() || !guestPassword.value.trim()) return t('checkout.errors.missingGuest')
@@ -662,37 +541,6 @@ export function useCheckout() {
     manual_form_data: buildManualFormDataPayload(),
   })
 
-  const loadOrderPaymentChannels = async () => {
-    if (!userAuthStore.isAuthenticated) {
-      orderPaymentChannels.value = []
-      return
-    }
-    if (!requiresOnlineChannel.value) {
-      orderPaymentChannels.value = []
-      return
-    }
-    if (cartItems.value.length === 0 || !preview.value) {
-      orderPaymentChannels.value = []
-      return
-    }
-    const requestId = ++orderPaymentChannelsRequestId.value
-    try {
-      const response = await userOrderAPI.getPaymentChannels({
-        amount: centsToAmount(expectedOnlinePayCents.value),
-        items: buildItemsPayload(),
-      })
-      if (requestId !== orderPaymentChannelsRequestId.value) return
-      const channels = response.data.data
-      orderPaymentChannels.value = Array.isArray(channels) ? channels : []
-    } catch {
-      if (requestId !== orderPaymentChannelsRequestId.value) return
-      const fallback = preview.value?.payment_channels
-      orderPaymentChannels.value = Array.isArray(fallback) ? fallback : []
-    }
-  }
-
-  const debouncedLoadOrderPaymentChannels = debounceAsync(loadOrderPaymentChannels, 250)
-
   const syncCartStockSnapshots = async () => {
     if (isBuyNowMode.value) return
     if (syncingStock.value) return
@@ -707,21 +555,18 @@ export function useCheckout() {
   const loadPreview = async () => {
     if (syncingStock.value) {
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = ''
       couponRefreshing.value = false
       return
     }
     if (cartItems.value.length === 0) {
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = ''
       couponRefreshing.value = false
       return
     }
     if (isGuestCheckout.value && (!guestEmail.value.trim() || !guestPassword.value.trim() || !guestEmailValid.value)) {
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = ''
       couponRefreshing.value = false
       return
@@ -729,14 +574,12 @@ export function useCheckout() {
 
     if (cartItems.value.some((item) => itemStockExceeded(item))) {
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = ''
       couponRefreshing.value = false
       return
     }
     if (cartItems.value.some((item) => itemMinNotMet(item))) {
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = ''
       couponRefreshing.value = false
       return
@@ -762,15 +605,9 @@ export function useCheckout() {
 
       if (requestId !== previewRequestId.value) return
       preview.value = response.data.data
-      if (userAuthStore.isAuthenticated) {
-        debouncedLoadOrderPaymentChannels()
-      } else {
-        orderPaymentChannels.value = []
-      }
     } catch (err: any) {
       if (requestId !== previewRequestId.value) return
       preview.value = null
-      orderPaymentChannels.value = []
       previewError.value = err.message || t('checkout.previewFailed')
     } finally {
       if (requestId === previewRequestId.value) {
@@ -784,7 +621,6 @@ export function useCheckout() {
 
   const loadPreviewNow = async () => {
     debouncedLoadPreview.cancel()
-    debouncedLoadOrderPaymentChannels.cancel()
     await loadPreview()
   }
 
@@ -815,7 +651,6 @@ export function useCheckout() {
 
       const payload = {
         ...buildOrderPayload(),
-        channel_id: requiresOnlineChannel.value ? (selectedChannelId.value || undefined) : undefined,
         use_balance: useBalance.value,
       }
 
@@ -882,25 +717,6 @@ export function useCheckout() {
     previewError.value = ''
   })
 
-  watch(
-    () => [userAuthStore.isAuthenticated, requiresOnlineChannel.value, expectedOnlinePayCents.value, preview.value?.total_amount],
-    () => {
-      debouncedLoadOrderPaymentChannels()
-    }
-  )
-
-  watch(
-    () => [paymentChannels.value, expectedOnlinePayCents.value, requiresOnlineChannel.value],
-    () => {
-      if (!selectedChannelId.value) return
-      const selected = paymentChannels.value.find((item: any) => Number(item?.id) === Number(selectedChannelId.value))
-      if (!selected || isChannelDisabledForAmount(selected)) {
-        selectedChannelId.value = null
-      }
-    },
-    { deep: true }
-  )
-
   const loadWalletBalance = async () => {
     if (!userAuthStore.isAuthenticated) return
     walletLoading.value = true
@@ -925,7 +741,6 @@ export function useCheckout() {
 
   onUnmounted(() => {
     debouncedLoadPreview.cancel()
-    debouncedLoadOrderPaymentChannels.cancel()
   })
 
   const cartItemKey = (item: CartItem) => `${item.productId}:${normalizeSkuId(item.skuId)}`
@@ -1158,15 +973,8 @@ export function useCheckout() {
     expectedWalletPaidDisplay,
     expectedOnlinePayDisplay,
     expectedOnlinePayCents,
-    // payment channels
+    // payment
     requiresOnlineChannel,
-    paymentChannels,
-    selectedChannelId,
-    isChannelDisabledForAmount,
-    channelAmountLimitHint,
-    handleSelectChannel,
-    formatChannelFeeRate,
-    formatChannelFixedFee,
     // submit
     submitting,
     canSubmit,
