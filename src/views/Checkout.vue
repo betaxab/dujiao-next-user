@@ -180,7 +180,7 @@
             <AlertDescription>{{ checkoutAlert.message }}</AlertDescription>
           </Alert>
 
-          <!-- Payment Channel Selection -->
+          <!-- Payment summary -->
           <div class="mt-6">
             <h3 class="mb-2.5 text-[13px] font-semibold text-muted-foreground">{{ t('checkout.paymentMethod') }}</h3>
 
@@ -210,34 +210,6 @@
               </div>
             </div>
 
-            <!-- Channel Grid (hidden in wallet-only mode) -->
-            <template v-if="!walletOnlyPayment">
-              <div v-if="requiresOnlineChannel && paymentChannels.length > 0" class="grid grid-cols-2 gap-2">
-                <button v-for="channel in paymentChannels" :key="channel.id"
-                  type="button"
-                  :disabled="isChannelDisabledForAmount(channel)"
-                  :title="isChannelDisabledForAmount(channel) ? channelAmountLimitHint(channel) : ''"
-                  :aria-pressed="selectedChannelId === channel.id"
-                  @click="handleSelectChannel(channel)"
-                  class="min-h-[48px] rounded-2xl border-2 px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
-                  :class="selectedChannelId === channel.id && !isChannelDisabledForAmount(channel) ? 'border-foreground bg-card' : 'border-transparent bg-secondary hover:border-foreground/40'">
-                  <div class="flex items-center gap-2">
-                    <img v-if="channel.icon" :src="getImageUrl(channel.icon)" alt="" loading="lazy" class="h-5 w-5 shrink-0 rounded object-contain" />
-                    <div class="truncate text-sm font-semibold">{{ channel.name }}</div>
-                  </div>
-                  <div v-if="channel.fee_policy === 'customer_surcharge'" class="mt-1 space-y-0.5 text-xs text-warning">
-                    <div>{{ t('payment.feeLabel') }}：{{ formatChannelFeeRate(channel) }}</div>
-                    <div>{{ t('payment.fixedFeeLabel') }}：{{ formatChannelFixedFee(channel) }}</div>
-                  </div>
-                  <div v-if="isChannelDisabledForAmount(channel)" class="mt-1 text-xs text-warning">
-                    {{ channelAmountLimitHint(channel) }}
-                  </div>
-                </button>
-              </div>
-              <div v-else-if="requiresOnlineChannel && paymentChannels.length === 0" class="text-xs text-muted-foreground">
-                {{ t('checkout.noPaymentChannels') }}
-              </div>
-            </template>
             <div v-if="!requiresOnlineChannel" class="text-xs text-success">
               {{ t('checkout.walletCoversAll') }}
             </div>
@@ -278,7 +250,7 @@ const panel = 'theme-float rounded-[22px] bg-card p-5 md:p-6'
 const panelTitle = 'text-[17px] font-bold'
 
 const {
-  userAuthStore, getLocalizedText, formatPrice, getImageUrl,
+  userAuthStore, getLocalizedText, formatPrice,
   isBuyNowMode, cartItems, totalItems, cartItemKey, checkoutItemImage, itemSkuDisplay,
   itemStockExceeded, itemStockHint,
   checkoutItemCurrency, checkoutItemPriceParts, checkoutItemOriginalPriceParts, checkoutItemHasPriceDiscount,
@@ -291,8 +263,7 @@ const {
   previewLoading, couponRefreshing, previewStatusText, hasPositiveAmount, formatDiscountPrice, checkoutAlert,
   showBalanceOption, walletLoading, walletBalance, useBalance, walletOnlyPayment,
   expectedWalletPaidDisplay, expectedOnlinePayDisplay, expectedOnlinePayCents,
-  requiresOnlineChannel, paymentChannels, selectedChannelId, isChannelDisabledForAmount, channelAmountLimitHint,
-  handleSelectChannel, formatChannelFeeRate, formatChannelFixedFee,
+  requiresOnlineChannel,
   submitting, canSubmit, handleSubmit,
 } = useCheckout()
 

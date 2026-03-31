@@ -230,46 +230,6 @@
               </div>
             </div>
 
-            <template v-if="!walletOnlyPayment">
-              <div v-if="requiresOnlineChannel && paymentChannels.length > 0" class="grid grid-cols-2 gap-2">
-                <button
-                  v-for="channel in paymentChannels"
-                  :key="channel.id"
-                  type="button"
-                  :disabled="isChannelDisabledForAmount(channel)"
-                  :title="isChannelDisabledForAmount(channel) ? channelAmountLimitHint(channel) : ''"
-                  :aria-pressed="selectedChannelId === channel.id"
-                  class="relative min-h-[50px] rounded-[14px] border-[1.5px] px-3 py-2.5 text-left transition-all focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-45"
-                  :class="selectedChannelId === channel.id && !isChannelDisabledForAmount(channel)
-                    ? 'border-primary bg-primary/10 shadow-xs'
-                    : 'border-border bg-card hover:border-hairline-strong'"
-                  @click="handleSelectChannel(channel)"
-                >
-                  <span
-                    v-if="selectedChannelId === channel.id && !isChannelDisabledForAmount(channel)"
-                    class="absolute right-2 top-2 grid h-4 w-4 place-items-center rounded-full bg-primary text-primary-foreground"
-                    aria-hidden="true"
-                  >
-                    <Check class="h-2.5 w-2.5" :stroke-width="3" />
-                  </span>
-                  <div class="flex items-center gap-2 pr-4">
-                    <img v-if="channel.icon" :src="getImageUrl(channel.icon)" alt="" loading="lazy" class="h-5 w-5 shrink-0 rounded object-contain" />
-                    <div class="truncate text-[13px] font-semibold">{{ channel.name }}</div>
-                  </div>
-                  <div v-if="channel.fee_policy === 'customer_surcharge'" class="mt-1 space-y-0.5 text-[11px] text-warning">
-                    <div>{{ t('payment.feeLabel') }}：{{ formatChannelFeeRate(channel) }}</div>
-                    <div>{{ t('payment.fixedFeeLabel') }}：{{ formatChannelFixedFee(channel) }}</div>
-                  </div>
-                  <div v-if="isChannelDisabledForAmount(channel)" class="mt-1 text-[11px] text-warning">
-                    {{ channelAmountLimitHint(channel) }}
-                  </div>
-                </button>
-              </div>
-              <div v-else-if="requiresOnlineChannel && paymentChannels.length === 0" class="text-xs text-muted-foreground">
-                {{ t('checkout.noPaymentChannels') }}
-              </div>
-            </template>
-
             <div v-if="!requiresOnlineChannel" class="mt-2 text-xs font-medium text-success">
               {{ t('checkout.walletCoversAll') }}
             </div>
@@ -293,7 +253,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowRight, Check } from 'lucide-vue-next'
+import { ArrowRight } from 'lucide-vue-next'
 import { pageAlertVariant, pageAlertToneClass } from '../../utils/alerts'
 import ImageCaptcha from '../../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../../components/captcha/TurnstileCaptcha.vue'
@@ -311,7 +271,7 @@ import { useCheckout } from '../../composables/useCheckout'
 const { t } = useI18n()
 
 const {
-  userAuthStore, getLocalizedText, formatPrice, getImageUrl,
+  userAuthStore, getLocalizedText, formatPrice,
   isBuyNowMode, cartItems, totalItems, cartItemKey, checkoutItemImage, itemSkuDisplay,
   itemStockExceeded, itemStockHint,
   checkoutItemCurrency, checkoutItemPriceParts, checkoutItemOriginalPriceParts, checkoutItemHasPriceDiscount,
@@ -324,8 +284,7 @@ const {
   previewLoading, couponRefreshing, previewStatusText, hasPositiveAmount, formatDiscountPrice, checkoutAlert,
   showBalanceOption, walletLoading, walletBalance, useBalance, walletOnlyPayment,
   expectedWalletPaidDisplay, expectedOnlinePayDisplay, expectedOnlinePayCents,
-  requiresOnlineChannel, paymentChannels, selectedChannelId, isChannelDisabledForAmount, channelAmountLimitHint,
-  handleSelectChannel, formatChannelFeeRate, formatChannelFixedFee,
+  requiresOnlineChannel,
   submitting, canSubmit, handleSubmit,
 } = useCheckout()
 
