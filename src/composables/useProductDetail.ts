@@ -443,7 +443,7 @@ export function useProductDetail(options: { onLoaded?: () => void } = {}) {
     if (!canPurchase.value) return
     purchaseWarning.value = ''
     if (requiresLogin.value) {
-      router.push(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`)
+      router.push(`/auth/register?redirect=${encodeURIComponent(route.fullPath)}`)
       return
     }
     const sku = selectedSku.value
@@ -478,7 +478,7 @@ export function useProductDetail(options: { onLoaded?: () => void } = {}) {
     if (!canPurchase.value) return
     if (!product.value) return
     if (requiresLogin.value) {
-      router.push(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`)
+      router.push(`/auth/register?redirect=${encodeURIComponent(route.fullPath)}`)
       return
     }
 
@@ -548,7 +548,7 @@ export function useProductDetail(options: { onLoaded?: () => void } = {}) {
   })
 
   const goLogin = () => {
-    router.push(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`)
+    router.push(`/auth/register?redirect=${encodeURIComponent(route.fullPath)}`)
   }
 
   const loadProduct = async () => {
