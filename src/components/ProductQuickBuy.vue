@@ -675,7 +675,7 @@ const handleBuyNow = () => {
 
 const goLogin = () => {
   close()
-  router.push(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`)
+  router.push(`/auth/register?redirect=${encodeURIComponent(route.fullPath)}`)
 }
 
 const goToDetail = () => {
