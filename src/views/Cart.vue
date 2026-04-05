@@ -40,7 +40,7 @@
                   <div class="min-w-0">
                     <router-link
                       :to="`/products/${item.slug}`"
-                      class="text-base md:text-lg font-bold text-primary hover:underline line-clamp-1"
+                      class="text-base md:text-lg font-bold text-primary hover:underline line-clamp-2"
                     >
                       {{ getLocalizedText(item.title) }}
                     </router-link>
@@ -189,5 +189,12 @@ const {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   line-clamp: 1;
+}
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 </style>
