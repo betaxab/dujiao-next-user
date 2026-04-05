@@ -120,7 +120,7 @@
     </div>
 
     <div class="flex min-w-0 flex-1 flex-col px-2.5 pb-2 pt-3" :class="lead && 'md:flex-none md:px-3.5 md:pb-3 md:pt-4'">
-      <h3 class="line-clamp-2 text-sm font-semibold leading-snug" :class="lead && 'max-md:text-base md:line-clamp-1 md:text-xl md:tracking-tight'">
+      <h3 class="line-clamp-2 text-sm font-semibold leading-snug" :class="lead && 'max-md:text-base md:text-xl md:tracking-tight'">
         {{ title }}
       </h3>
       <p v-if="lead && description" class="mt-1 hidden truncate text-[13px] text-muted-foreground md:block">
