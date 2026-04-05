@@ -1,0 +1,34 @@
+User-agent: *
+
+# Disallow admin and system path
+Disallow: /api
+Disallow: /admin/
+Disallow: /me/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /pay
+Disallow: /orders/
+Disallow: /recharge-orders/
+Disallow: /guest/
+Disallow: /auth
+
+# Allow public API
+Allow: /api/v1/public/
+
+# Allow page
+Allow: /
+Allow: /buy/
+Allow: /products/
+Allow: /categories/
+Allow: /blog/
+Allow: /notice/
+Allow: /about/
+Allow: /terms
+Allow: /privacy
+
+# Allow picture & assets
+Allow: /uploads/
+Allow: /assets/
+
+# Sitemap
+Sitemap: https://shop.tz.ci/sitemap.xml
