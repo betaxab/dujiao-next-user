@@ -49,7 +49,7 @@
       <div v-if="product.category?.name" class="text-xs text-muted-foreground uppercase tracking-wider mb-1 md:mb-2 truncate">
         {{ t('products.categoryLabel') }} · {{ getLocalizedText(product.category.name) }}
       </div>
-      <h3 class="text-sm md:text-lg font-bold text-foreground mb-1 md:mb-2 transition-colors line-clamp-1">
+      <h3 class="text-sm md:text-lg font-bold text-foreground mb-1 md:mb-2 transition-colors line-clamp-2">
         {{ getLocalizedText(product.title) }}
       </h3>
 
