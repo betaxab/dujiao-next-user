@@ -887,6 +887,7 @@ const messages = {
             fulfillmentType: '类型',
             fulfillmentStatus: '状态',
             instructionsTitle: '使用说明',
+            productDescriptionTitle: '商品说明',
             fulfillmentTypes: {
                 manual: '人工交付',
                 auto: '自动交付',
@@ -1902,6 +1903,7 @@ const messages = {
             fulfillmentType: '類型',
             fulfillmentStatus: '狀態',
             instructionsTitle: '使用說明',
+            productDescriptionTitle: '商品說明',
             fulfillmentTypes: {
                 manual: '人工交付',
                 auto: '自動交付',
@@ -2878,6 +2880,7 @@ const messages = {
             fulfillmentType: 'Type',
             fulfillmentStatus: 'Status',
             instructionsTitle: 'Usage instructions',
+            productDescriptionTitle: 'Product Description',
             fulfillmentTypes: {
                 manual: 'Manual',
                 auto: 'Auto',

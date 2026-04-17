@@ -325,6 +325,12 @@
                     fulfillmentTypeLabelText(child.fulfillment.type) }}</div>
                   <div class="text-sm theme-text-muted">{{ t('orderDetail.fulfillmentStatus') }}：{{
                     fulfillmentStatusLabelText(child.fulfillment.status) }}</div>
+                  <div v-if="showFulfillmentProductDescription(child.fulfillment)" class="mt-3">
+                    <div class="mb-2 text-sm font-semibold theme-text-primary">{{ t('orderDetail.productDescriptionTitle') }}</div>
+                    <div class="theme-surface-soft border rounded-xl p-4 text-sm theme-text-secondary whitespace-pre-wrap break-words overflow-hidden">
+                      {{ fulfillmentProductDescription(child.fulfillment) }}
+                    </div>
+                  </div>
                   <div v-if="isFulfillmentTruncated(child.fulfillment)" class="mt-3">
                     <div class="flex items-center justify-between mb-2">
                       <span class="text-sm theme-text-muted">{{ t('orderDetail.fulfillmentTotalLines', { count: child.fulfillment.payload_line_count }) }}</span>
@@ -392,6 +398,12 @@
             fulfillmentTypeLabelText(order.fulfillment.type) }}</div>
           <div class="text-sm theme-text-muted">{{ t('orderDetail.fulfillmentStatus') }}：{{
             fulfillmentStatusLabelText(order.fulfillment.status) }}</div>
+          <div v-if="showFulfillmentProductDescription(order.fulfillment)" class="mt-4">
+            <div class="mb-2 text-sm font-semibold theme-text-primary">{{ t('orderDetail.productDescriptionTitle') }}</div>
+            <div class="theme-surface-soft border rounded-xl p-4 text-sm theme-text-secondary whitespace-pre-wrap break-words overflow-hidden">
+              {{ fulfillmentProductDescription(order.fulfillment) }}
+            </div>
+          </div>
           <div v-if="isFulfillmentTruncated(order.fulfillment)" class="mt-4">
             <div class="text-sm theme-text-muted mb-2">{{ t('orderDetail.fulfillmentTotalLines', { count: order.fulfillment.payload_line_count }) }}</div>
             <div class="mb-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
@@ -540,6 +552,15 @@ const statusLabel = (status: string) => orderStatusLabel(t, status)
 const fulfillmentTypeLabelText = (type: string) => fulfillmentTypeLabel(t, type, 'orderDetail')
 
 const fulfillmentStatusLabelText = (status: string) => fulfillmentStatusLabel(t, status, 'orderDetail')
+
+const fulfillmentProductDescription = (fulfillment: any) => {
+  return String(fulfillment?.batch_remark || '').trim()
+}
+
+const showFulfillmentProductDescription = (fulfillment: any) => {
+  if (String(fulfillment?.type || '').trim() !== 'auto') return false
+  return fulfillmentProductDescription(fulfillment) !== ''
+}
 
 const statusClass = (status: string) => orderStatusClass(status)
 
