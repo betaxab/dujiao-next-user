@@ -1,32 +1,29 @@
 <template>
   <div class="space-y-4">
-    <div class="rounded-2xl border theme-panel-soft p-6 shadow-sm">
+    <div class="rounded-2xl border bg-card p-6 shadow-sm">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 class="text-xl font-bold theme-text-primary">{{ t('orders.title') }}</h2>
-          <p class="mt-1 text-sm theme-text-muted">{{ t('orders.subtitle') }}</p>
+          <h2 class="text-xl font-bold text-foreground">{{ t('orders.title') }}</h2>
+          <p class="mt-1 text-sm text-muted-foreground">{{ t('orders.subtitle') }}</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-full border theme-pill-neutral px-3 py-1 text-xs font-semibold">
+          <Badge variant="neutral" size="sm" class="rounded-full">
             {{ t('orders.pageInfo', { page: activePagination.page, total: activePagination.total_page }) }}
-          </span>
-          <router-link
-            to="/products"
-            class="inline-flex items-center rounded-full border theme-btn-ghost px-3 py-1 text-xs font-semibold"
-          >
-            {{ t('orders.continueShopping') }}
-          </router-link>
+          </Badge>
+          <Button as-child variant="ghost" size="sm" class="rounded-full">
+            <router-link to="/products">{{ t('orders.continueShopping') }}</router-link>
+          </Button>
         </div>
       </div>
     </div>
 
     <!-- Tab 切换 -->
-    <div class="flex rounded-xl border theme-panel-soft overflow-hidden">
+    <div class="flex rounded-xl border bg-card overflow-hidden">
       <button
         type="button"
         class="flex-1 py-3 text-sm font-semibold text-center transition-colors"
-        :class="activeTab === 'product' ? 'theme-btn-primary' : 'theme-text-muted hover:theme-text-primary'"
+        :class="activeTab === 'product' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
         @click="switchTab('product')"
       >
         {{ t('orders.tabs.product') }}
@@ -34,7 +31,7 @@
       <button
         type="button"
         class="flex-1 py-3 text-sm font-semibold text-center transition-colors"
-        :class="activeTab === 'recharge' ? 'theme-btn-primary' : 'theme-text-muted hover:theme-text-primary'"
+        :class="activeTab === 'recharge' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
         @click="switchTab('recharge')"
       >
         {{ t('orders.tabs.recharge') }}
@@ -44,43 +41,43 @@
     <!-- 普通订单 Tab -->
     <template v-if="activeTab === 'product'">
       <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div class="rounded-2xl border theme-panel p-4">
-          <div class="text-xs theme-text-muted">{{ t('orders.stats.totalMatched') }}</div>
-          <div class="mt-2 text-xl font-bold theme-text-primary">{{ orderPagination.total }}</div>
+        <div class="rounded-2xl border bg-card p-4">
+          <div class="text-xs text-muted-foreground">{{ t('orders.stats.totalMatched') }}</div>
+          <div class="mt-2 text-xl font-bold text-foreground">{{ orderPagination.total }}</div>
         </div>
-        <div class="rounded-2xl border theme-panel p-4">
-          <div class="text-xs theme-text-muted">{{ t('orders.stats.currentPage') }}</div>
-          <div class="mt-2 text-xl font-bold theme-text-primary">{{ orders.length }}</div>
+        <div class="rounded-2xl border bg-card p-4">
+          <div class="text-xs text-muted-foreground">{{ t('orders.stats.currentPage') }}</div>
+          <div class="mt-2 text-xl font-bold text-foreground">{{ orders.length }}</div>
         </div>
-        <div class="rounded-2xl border theme-panel p-4">
+        <div class="rounded-2xl border bg-card p-4">
           <div class="text-xs">{{ t('orders.stats.pendingPayment') }}</div>
           <div class="mt-2 text-xl font-bold">{{ pendingPaymentCount }}</div>
         </div>
-        <div class="rounded-2xl border theme-panel p-4">
+        <div class="rounded-2xl border bg-card p-4">
           <div class="text-xs">{{ t('orders.stats.finished') }}</div>
           <div class="mt-2 text-xl font-bold">{{ finishedCount }}</div>
         </div>
       </div>
 
-      <div class="rounded-2xl border theme-panel-soft p-4 shadow-sm">
+      <div class="rounded-2xl border bg-card p-4 shadow-sm">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
           <div class="w-full lg:max-w-sm">
-            <label class="mb-1 block text-xs font-semibold theme-text-muted">{{ t('orders.filters.keyword') }}</label>
-            <input
-              v-model.trim="orderFilters.orderNo"
+            <label class="mb-1 block text-xs font-semibold text-muted-foreground">{{ t('orders.filters.keyword') }}</label>
+            <Input
+              v-model="orderFilters.orderNo"
               type="text"
               :placeholder="t('orders.filters.orderNoPlaceholder')"
-              class="h-11 w-full form-input-lg placeholder:text-gray-400"
+              class="h-11"
               @input="handleOrderNoInput"
               @keyup.enter="applyOrderFilters"
             />
           </div>
 
           <div class="w-full lg:w-56">
-            <label class="mb-1 block text-xs font-semibold theme-text-muted">{{ t('orders.filters.status') }}</label>
+            <label class="mb-1 block text-xs font-semibold text-muted-foreground">{{ t('orders.filters.status') }}</label>
             <select
               v-model="orderFilters.status"
-              class="h-11 w-full form-input-lg"
+              :class="selectClass"
               @change="handleOrderStatusChange"
             >
               <option v-for="item in orderStatusOptions" :key="item.value || 'all'" :value="item.value">
@@ -90,149 +87,116 @@
           </div>
 
           <div class="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl theme-btn-primary px-4 text-sm font-bold transition-colors"
-              @click="applyOrderFilters"
-            >
+            <Button type="button" class="h-11 font-bold" @click="applyOrderFilters">
               {{ t('orders.filters.search') }}
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl border theme-btn-secondary px-4 text-sm font-semibold"
-              @click="resetOrderFilters"
-            >
+            </Button>
+            <Button type="button" variant="secondary" class="h-11 font-semibold" @click="resetOrderFilters">
               {{ t('orders.filters.reset') }}
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl border theme-btn-secondary px-4 text-sm font-semibold"
-              @click="refreshOrdersCurrentPage"
-            >
+            </Button>
+            <Button type="button" variant="secondary" class="h-11 font-semibold" @click="refreshOrdersCurrentPage">
               {{ t('orders.filters.refresh') }}
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div v-if="hasOrderActiveFilters" class="mt-3 text-xs theme-text-muted">
+        <div v-if="hasOrderActiveFilters" class="mt-3 text-xs text-muted-foreground">
           {{ t('orders.filters.current', { orderNo: orderFilters.orderNo || t('orders.filters.any'), status: currentOrderStatusLabel }) }}
         </div>
       </div>
 
       <div v-if="orderLoading" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-2xl border theme-surface-muted"></div>
+        <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-2xl border bg-muted"></div>
       </div>
 
-      <div v-else-if="orders.length === 0" class="rounded-2xl border theme-panel-soft p-12 text-center shadow-sm">
-        <p class="mb-6 theme-text-muted">{{ hasOrderActiveFilters ? t('orders.emptyFiltered') : t('orders.empty') }}</p>
-        <router-link
-          to="/products"
-          class="inline-flex items-center gap-2 rounded-xl theme-btn-primary px-6 py-3 font-bold transition-colors"
-        >
-          {{ t('orders.emptyAction') }}
-        </router-link>
-      </div>
+      <EmptyState
+        v-else-if="orders.length === 0"
+        icon="order"
+        :description="hasOrderActiveFilters ? t('orders.emptyFiltered') : t('orders.empty')"
+        :action-label="t('orders.emptyAction')"
+        action-to="/products"
+      />
 
       <div v-else class="space-y-4">
         <div
           v-for="order in orders"
           :key="order.order_no"
-          class="rounded-2xl border theme-panel-soft p-6 shadow-sm transition-all theme-card-interactive"
+          class="rounded-2xl border bg-card p-6 shadow-sm transition-all transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
         >
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div class="text-xs uppercase tracking-[0.16em] theme-text-muted">{{ t('orders.orderNo') }}：{{ order.order_no }}</div>
-              <div class="mt-2 text-lg font-bold theme-text-primary">{{ formatMoney(order.total_amount, order.currency) }}</div>
-              <div v-if="hasDiscount(order)" class="mt-2 flex flex-wrap gap-2 text-xs theme-text-muted">
-                <span v-if="hasDiscountAmount(order.discount_amount)" class="theme-badge theme-badge-success px-2.5 py-1">
+              <div class="text-xs uppercase tracking-[0.16em] text-muted-foreground">{{ t('orders.orderNo') }}：{{ order.order_no }}</div>
+              <div class="mt-2 text-lg font-bold text-foreground">{{ formatMoney(order.total_amount, order.currency) }}</div>
+              <div v-if="hasDiscount(order)" class="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <Badge v-if="hasDiscountAmount(order.discount_amount)" variant="success" size="sm">
                   {{ t('orderDetail.couponDiscountLabel') }}：{{ formatDiscountMoney(order.discount_amount, order.currency) }}
-                </span>
-                <span v-if="hasDiscountAmount(order.promotion_discount_amount)" class="theme-badge theme-badge-danger px-2.5 py-1">
+                </Badge>
+                <Badge v-if="hasDiscountAmount(order.promotion_discount_amount)" variant="danger" size="sm">
                   {{ t('orderDetail.promotionDiscountLabel') }}：{{ formatDiscountMoney(order.promotion_discount_amount, order.currency) }}
-                </span>
+                </Badge>
               </div>
-              <div class="mt-2 text-xs theme-text-muted">{{ formatDate(order.created_at) }}</div>
+              <div class="mt-2 text-xs text-muted-foreground">{{ formatDate(order.created_at) }}</div>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-              <span class="theme-badge px-3 py-1 text-xs font-medium" :class="statusClass(order.status)">
+              <Badge :variant="statusVariant(order.status)" size="sm">
                 {{ statusLabel(order.status) }}
-              </span>
-              <router-link
-                :to="`/orders/${order.order_no}`"
-                class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium"
-              >
-                {{ t('orders.viewDetails') }}
-              </router-link>
-              <router-link
-                v-if="order.status === 'pending_payment'"
-                :to="`/pay?order_no=${order.order_no}`"
-                class="rounded-lg theme-btn-primary px-4 py-2 text-sm font-bold transition-colors"
-              >
-                {{ t('orders.payNow') }}
-              </router-link>
+              </Badge>
+              <Button as-child variant="secondary" size="sm">
+                <router-link :to="`/orders/${order.order_no}`">{{ t('orders.viewDetails') }}</router-link>
+              </Button>
+              <Button v-if="order.status === 'pending_payment'" as-child size="sm">
+                <router-link :to="`/pay?order_no=${order.order_no}`">{{ t('orders.payNow') }}</router-link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-if="orderPagination.total_page > 1" class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <button
-          :disabled="orderPagination.page <= 1"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="changeOrderPage(orderPagination.page - 1)"
-        >
-          {{ t('orders.prevPage') }}
-        </button>
-        <span class="rounded-full border theme-pill-neutral px-4 py-2 text-sm">
-          {{ t('orders.pageInfo', { page: orderPagination.page, total: orderPagination.total_page }) }}
-        </span>
-        <button
-          :disabled="orderPagination.page >= orderPagination.total_page"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="changeOrderPage(orderPagination.page + 1)"
-        >
-          {{ t('orders.nextPage') }}
-        </button>
-      </div>
+      <PaginationNav
+        :current-page="orderPagination.page"
+        :total-pages="orderPagination.total_page"
+        :loading="orderLoading"
+        :scroll-top="false"
+        @change-page="changeOrderPage"
+      />
     </template>
 
     <!-- 充值订单 Tab -->
     <template v-if="activeTab === 'recharge'">
       <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <div class="rounded-2xl border theme-panel p-4">
-          <div class="text-xs theme-text-muted">{{ t('orders.stats.totalMatched') }}</div>
-          <div class="mt-2 text-xl font-bold theme-text-primary">{{ rechargePagination.total }}</div>
+        <div class="rounded-2xl border bg-card p-4">
+          <div class="text-xs text-muted-foreground">{{ t('orders.stats.totalMatched') }}</div>
+          <div class="mt-2 text-xl font-bold text-foreground">{{ rechargePagination.total }}</div>
         </div>
-        <div class="rounded-2xl border theme-panel p-4">
-          <div class="text-xs theme-text-muted">{{ t('orders.stats.currentPage') }}</div>
-          <div class="mt-2 text-xl font-bold theme-text-primary">{{ rechargeOrders.length }}</div>
+        <div class="rounded-2xl border bg-card p-4">
+          <div class="text-xs text-muted-foreground">{{ t('orders.stats.currentPage') }}</div>
+          <div class="mt-2 text-xl font-bold text-foreground">{{ rechargeOrders.length }}</div>
         </div>
-        <div class="rounded-2xl border theme-panel p-4">
+        <div class="rounded-2xl border bg-card p-4">
           <div class="text-xs">{{ t('orders.stats.pendingPayment') }}</div>
           <div class="mt-2 text-xl font-bold">{{ rechargePendingCount }}</div>
         </div>
       </div>
 
-      <div class="rounded-2xl border theme-panel-soft p-4 shadow-sm">
+      <div class="rounded-2xl border bg-card p-4 shadow-sm">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
           <div class="w-full lg:max-w-sm">
-            <label class="mb-1 block text-xs font-semibold theme-text-muted">{{ t('orders.rechargeFilters.keyword') }}</label>
-            <input
-              v-model.trim="rechargeFilters.rechargeNo"
+            <label class="mb-1 block text-xs font-semibold text-muted-foreground">{{ t('orders.rechargeFilters.keyword') }}</label>
+            <Input
+              v-model="rechargeFilters.rechargeNo"
               type="text"
               :placeholder="t('orders.rechargeFilters.rechargeNoPlaceholder')"
-              class="h-11 w-full form-input-lg placeholder:text-gray-400"
+              class="h-11"
               @input="handleRechargeNoInput"
               @keyup.enter="applyRechargeFilters"
             />
           </div>
 
           <div class="w-full lg:w-56">
-            <label class="mb-1 block text-xs font-semibold theme-text-muted">{{ t('orders.filters.status') }}</label>
+            <label class="mb-1 block text-xs font-semibold text-muted-foreground">{{ t('orders.filters.status') }}</label>
             <select
               v-model="rechargeFilters.status"
-              class="h-11 w-full form-input-lg"
+              :class="selectClass"
               @change="handleRechargeStatusChange"
             >
               <option v-for="item in rechargeStatusOptions" :key="item.value || 'all'" :value="item.value">
@@ -242,102 +206,69 @@
           </div>
 
           <div class="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl theme-btn-primary px-4 text-sm font-bold transition-colors"
-              @click="applyRechargeFilters"
-            >
+            <Button type="button" class="h-11 font-bold" @click="applyRechargeFilters">
               {{ t('orders.filters.search') }}
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl border theme-btn-secondary px-4 text-sm font-semibold"
-              @click="resetRechargeFilters"
-            >
+            </Button>
+            <Button type="button" variant="secondary" class="h-11 font-semibold" @click="resetRechargeFilters">
               {{ t('orders.filters.reset') }}
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center rounded-xl border theme-btn-secondary px-4 text-sm font-semibold"
-              @click="refreshRechargeCurrentPage"
-            >
+            </Button>
+            <Button type="button" variant="secondary" class="h-11 font-semibold" @click="refreshRechargeCurrentPage">
               {{ t('orders.filters.refresh') }}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       <div v-if="rechargeLoading" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-2xl border theme-surface-muted"></div>
+        <div v-for="i in 3" :key="i" class="h-24 animate-pulse rounded-2xl border bg-muted"></div>
       </div>
 
-      <div v-else-if="rechargeOrders.length === 0" class="rounded-2xl border theme-panel-soft p-12 text-center shadow-sm">
-        <p class="mb-6 theme-text-muted">{{ t('orders.rechargeEmpty') }}</p>
-        <router-link
-          to="/me/wallet"
-          class="inline-flex items-center gap-2 rounded-xl theme-btn-primary px-6 py-3 font-bold transition-colors"
-        >
-          {{ t('orders.rechargeEmptyAction') }}
-        </router-link>
-      </div>
+      <EmptyState
+        v-else-if="rechargeOrders.length === 0"
+        icon="order"
+        :description="t('orders.rechargeEmpty')"
+        :action-label="t('orders.rechargeEmptyAction')"
+        action-to="/me/wallet"
+      />
 
       <div v-else class="space-y-4">
         <div
           v-for="ro in rechargeOrders"
           :key="ro.recharge_no"
-          class="rounded-2xl border theme-panel-soft p-6 shadow-sm transition-all theme-card-interactive"
+          class="rounded-2xl border bg-card p-6 shadow-sm transition-all transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
         >
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div class="text-xs uppercase tracking-[0.16em] theme-text-muted">{{ t('personalCenter.wallet.rechargeNoLabel') }}：{{ ro.recharge_no }}</div>
-              <div class="mt-2 text-lg font-bold theme-text-primary">{{ formatMoney(ro.amount, ro.currency) }}</div>
-              <div v-if="ro.fee_amount && ro.fee_amount !== '0.00'" class="mt-1 text-xs theme-text-muted">
+              <div class="text-xs uppercase tracking-[0.16em] text-muted-foreground">{{ t('personalCenter.wallet.rechargeNoLabel') }}：{{ ro.recharge_no }}</div>
+              <div class="mt-2 text-lg font-bold text-foreground">{{ formatMoney(ro.amount, ro.currency) }}</div>
+              <div v-if="ro.fee_amount && ro.fee_amount !== '0.00'" class="mt-1 text-xs text-muted-foreground">
                 {{ t('orders.rechargePayable') }}：{{ formatMoney(ro.payable_amount, ro.currency) }}
               </div>
-              <div class="mt-2 text-xs theme-text-muted">{{ formatDate(ro.created_at) }}</div>
+              <div class="mt-2 text-xs text-muted-foreground">{{ formatDate(ro.created_at) }}</div>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-              <span class="theme-badge px-3 py-1 text-xs font-medium" :class="rechargeStatusBadgeClass(ro.status)">
+              <Badge :variant="rechargeStatusVariant(ro.status)" size="sm">
                 {{ rechargeStatusText(ro.status) }}
-              </span>
-              <router-link
-                :to="`/recharge-orders/${ro.recharge_no}`"
-                class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium"
-              >
-                {{ t('orders.viewDetails') }}
-              </router-link>
-              <router-link
-                v-if="ro.status === 'pending'"
-                :to="`/recharge-orders/${ro.recharge_no}`"
-                class="rounded-lg theme-btn-primary px-4 py-2 text-sm font-bold transition-colors"
-              >
-                {{ t('orders.payNow') }}
-              </router-link>
+              </Badge>
+              <Button as-child variant="secondary" size="sm">
+                <router-link :to="`/recharge-orders/${ro.recharge_no}`">{{ t('orders.viewDetails') }}</router-link>
+              </Button>
+              <Button v-if="ro.status === 'pending'" as-child size="sm">
+                <router-link :to="`/recharge-orders/${ro.recharge_no}`">{{ t('orders.payNow') }}</router-link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-if="rechargePagination.total_page > 1" class="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <button
-          :disabled="rechargePagination.page <= 1"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="changeRechargePage(rechargePagination.page - 1)"
-        >
-          {{ t('orders.prevPage') }}
-        </button>
-        <span class="rounded-full border theme-pill-neutral px-4 py-2 text-sm">
-          {{ t('orders.pageInfo', { page: rechargePagination.page, total: rechargePagination.total_page }) }}
-        </span>
-        <button
-          :disabled="rechargePagination.page >= rechargePagination.total_page"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="changeRechargePage(rechargePagination.page + 1)"
-        >
-          {{ t('orders.nextPage') }}
-        </button>
-      </div>
+      <PaginationNav
+        :current-page="rechargePagination.page"
+        :total-pages="rechargePagination.total_page"
+        :loading="rechargeLoading"
+        :scroll-top="false"
+        @change-page="changeRechargePage"
+      />
     </template>
   </div>
 </template>
@@ -347,11 +278,20 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { userOrderAPI } from '../../api'
 import { walletAPI } from '../../api/wallet'
-import { orderStatusClass, orderStatusLabel } from '../../utils/status'
+import { orderStatusVariant, orderStatusLabel, type BadgeTone } from '../../utils/status'
 import { debounceAsync } from '../../utils/debounce'
 import { amountToCents } from '../../utils/money'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import EmptyState from '../../components/EmptyState.vue'
+import PaginationNav from '../../components/PaginationNav.vue'
 
 const { t } = useI18n()
+
+// 原生筛选 select（含空值"全部"选项）套用 Input 等价 token 样式
+const selectClass =
+  'h-11 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 
 // ========== Tab 状态 ==========
 const activeTab = ref<'product' | 'recharge'>('product')
@@ -454,7 +394,7 @@ const resetOrderFilters = () => {
 const refreshOrdersCurrentPage = () => loadOrders(orderPagination.value.page)
 
 const statusLabel = (status: string) => orderStatusLabel(t, status)
-const statusClass = (status: string) => orderStatusClass(status)
+const statusVariant = (status: string) => orderStatusVariant(status)
 
 // ========== 充值订单 ==========
 const rechargeLoading = ref(false)
@@ -528,11 +468,11 @@ const rechargeStatusText = (status?: string) => {
   return translated
 }
 
-const rechargeStatusBadgeClass = (status?: string) => {
+const rechargeStatusVariant = (status?: string): BadgeTone => {
   const normalized = String(status || '').toLowerCase()
-  if (normalized === 'success') return 'theme-badge-success'
-  if (normalized === 'failed' || normalized === 'expired') return 'theme-badge-danger'
-  return 'theme-badge-warning'
+  if (normalized === 'success') return 'success'
+  if (normalized === 'failed' || normalized === 'expired') return 'danger'
+  return 'warning'
 }
 
 // ========== 共用工具 ==========

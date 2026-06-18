@@ -1,96 +1,86 @@
 <template>
-  <div class="theme-personal-card">
-    <div v-if="panelAlert" class="mb-5 rounded-xl border px-4 py-3 text-sm shadow-sm" :class="pageAlertClass(panelAlert.level)">
-      {{ panelAlert.message }}
-    </div>
+  <Card :class="embedded ? 'p-5 sm:p-6' : 'p-6 sm:p-7'">
+    <Alert
+      v-if="panelAlert"
+      class="mb-5"
+      :variant="panelAlert.level === 'error' ? 'destructive' : 'default'"
+      :class="panelAlert.level === 'success' ? 'border-success/40 text-success' : ''"
+    >
+      <AlertDescription>{{ panelAlert.message }}</AlertDescription>
+    </Alert>
 
-    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h2 class="text-xl font-bold theme-text-primary">{{ t('personalCenter.reseller.productSettings.title') }}</h2>
-        <p class="mt-1 text-sm theme-text-muted">{{ t('personalCenter.reseller.productSettings.subtitle') }}</p>
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center" :class="embedded ? 'md:justify-end' : 'md:justify-between'">
+      <div v-if="!embedded">
+        <h2 class="text-xl font-bold text-foreground">{{ t('personalCenter.reseller.productSettings.title') }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">{{ t('personalCenter.reseller.productSettings.subtitle') }}</p>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center rounded-lg border theme-btn-secondary px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-        :disabled="loading"
-        @click="loadRows"
-      >
+      <Button type="button" variant="outline" size="sm" :disabled="loading" @click="loadRows">
         {{ t('orders.filters.refresh') }}
-      </button>
+      </Button>
     </div>
 
     <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto]">
-      <input
+      <Input
         v-model.trim="filters.keyword"
         type="text"
-        class="form-input-lg"
         :placeholder="t('personalCenter.reseller.productSettings.searchPlaceholder')"
         @keyup.enter="loadRows"
       />
-      <button
-        type="button"
-        class="theme-btn-primary rounded-xl px-5 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
-        :disabled="loading"
-        @click="loadRows"
-      >
+      <Button type="button" :disabled="loading" @click="loadRows">
         {{ t('orders.filters.search') }}
-      </button>
+      </Button>
     </div>
 
     <div v-if="loading" class="space-y-3">
-      <div v-for="idx in 3" :key="idx" class="h-20 animate-pulse rounded-xl border theme-surface-muted"></div>
+      <div v-for="idx in 3" :key="idx" class="h-20 animate-pulse rounded-xl border bg-muted"></div>
     </div>
 
-    <div v-else-if="rows.length === 0" class="rounded-xl border border-dashed theme-surface-soft px-4 py-8 text-sm theme-text-muted">
+    <div v-else-if="rows.length === 0" class="rounded-xl border border-dashed px-4 py-8 text-sm text-muted-foreground">
       {{ t('personalCenter.reseller.productSettings.empty') }}
     </div>
 
     <div v-else class="space-y-3">
-      <div v-for="row in rows" :key="row.product.id" class="rounded-xl border theme-surface-soft p-4">
+      <div v-for="row in rows" :key="row.product.id" class="rounded-xl border bg-muted/30 p-4">
         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div class="min-w-0">
-            <div class="truncate font-bold theme-text-primary">{{ getProductTitle(row.product.title) }}</div>
-            <div class="mt-1 break-all text-xs theme-text-muted">#{{ row.product.id }} / {{ row.product.slug }}</div>
-            <div class="mt-2 flex flex-wrap gap-2 text-sm theme-text-muted">
+            <div class="truncate font-bold text-foreground">{{ getProductTitle(row.product.title) }}</div>
+            <div class="mt-1 break-all text-xs text-muted-foreground">#{{ row.product.id }} / {{ row.product.slug }}</div>
+            <div class="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
               <span>{{ t('personalCenter.reseller.productSettings.basePrice') }} {{ row.product.price_amount }}</span>
               <span>{{ t('personalCenter.reseller.productSettings.effectivePrice') }} {{ summarizeEffectivePrice(row.product_setting) }}</span>
             </div>
           </div>
-          <button
+          <Button
             type="button"
-            class="theme-btn-primary rounded-xl px-4 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
+            size="sm"
             :disabled="detailLoading || saving"
             @click="openEditor(row.product.id)"
           >
             {{ t('personalCenter.reseller.productSettings.edit') }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
 
-    <div v-if="editing" class="mt-6 rounded-xl border theme-surface-soft p-4">
+    <div v-if="editing" class="mt-6 rounded-xl border bg-muted/30 p-4">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div class="min-w-0">
-          <h3 class="truncate text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.productSettings.editorTitle') }}</h3>
-          <div class="mt-1 truncate text-xs theme-text-muted">{{ getProductTitle(editing.product.title) }}</div>
+          <h3 class="truncate text-base font-bold text-foreground">{{ t('personalCenter.reseller.productSettings.editorTitle') }}</h3>
+          <div class="mt-1 truncate text-xs text-muted-foreground">{{ getProductTitle(editing.product.title) }}</div>
         </div>
-        <button
-          type="button"
-          class="rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-          @click="editing = null"
-        >
+        <Button type="button" variant="outline" size="sm" @click="editing = null">
           {{ t('common.cancel') }}
-        </button>
+        </Button>
       </div>
 
-      <div v-if="detailLoading" class="h-24 animate-pulse rounded-xl border theme-surface-muted"></div>
+      <div v-if="detailLoading" class="h-24 animate-pulse rounded-xl border bg-muted"></div>
       <div v-else class="space-y-4">
         <ResellerProductRuleEditor
           v-model="productForm"
           :label="t('personalCenter.reseller.productSettings.productLevelRule')"
           :base-price="editing.product.price_amount"
         />
-        <div v-for="sku in editing.skus" :key="sku.id" class="rounded-xl border theme-surface-soft p-3">
+        <div v-for="sku in editing.skus" :key="sku.id" class="rounded-xl border bg-card p-3">
           <ResellerProductRuleEditor
             :model-value="skuFormFor(sku.id)"
             :label="buildSkuLabel(sku)"
@@ -99,26 +89,16 @@
           />
         </div>
         <div class="flex flex-wrap gap-3">
-          <button
-            type="button"
-            class="theme-btn-primary rounded-xl px-5 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="saving"
-            @click="saveEditing"
-          >
+          <Button type="button" :disabled="saving" @click="saveEditing">
             {{ saving ? t('personalCenter.reseller.productSettings.saving') : t('personalCenter.reseller.productSettings.save') }}
-          </button>
-          <button
-            type="button"
-            class="rounded-xl border theme-btn-secondary px-5 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="saving"
-            @click="resetProductRule"
-          >
+          </Button>
+          <Button type="button" variant="outline" :disabled="saving" @click="resetProductRule">
             {{ t('personalCenter.reseller.productSettings.resetProductRule') }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -132,7 +112,11 @@ import type {
   ResellerProductSettingProductData,
   ResellerProductSettingSKUData,
 } from '../../api/types'
-import { pageAlertClass, type PageAlert } from '../../utils/alerts'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { type PageAlert } from '../../utils/alerts'
 import { getLocalizedText } from '../../utils/resellerSiteConfig'
 import {
   buildResellerProductSettingPayload,
@@ -140,6 +124,8 @@ import {
   summarizeEffectivePrice,
 } from '../../utils/resellerProductSettings'
 import ResellerProductRuleEditor from './ResellerProductRuleEditor.vue'
+
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 
 const { t, locale } = useI18n()
 

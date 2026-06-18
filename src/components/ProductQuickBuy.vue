@@ -40,7 +40,7 @@
           class="
             w-full max-h-[85vh] flex flex-col
             rounded-t-2xl md:rounded-2xl
-            theme-panel-strong border-t md:border theme-border
+            bg-card/95 backdrop-blur-xl text-card-foreground border-t md:border
             shadow-2xl
             md:max-w-md md:max-h-[75vh]
           "
@@ -53,16 +53,10 @@
 
           <!-- Desktop header bar -->
           <div class="hidden md:flex items-center justify-between px-5 pt-4 pb-0 shrink-0">
-            <h2 class="text-sm font-semibold theme-text-primary">{{ t('quickBuy.title') }}</h2>
-            <button
-              type="button"
-              class="p-1.5 -mr-1 rounded-lg theme-text-muted hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
-              @click="close"
-            >
-              <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <h2 class="text-sm font-semibold text-foreground">{{ t('quickBuy.title') }}</h2>
+            <Button type="button" variant="ghost" size="icon" class="-mr-1 text-muted-foreground" @click="close">
+              <X />
+            </Button>
           </div>
 
           <!-- Scrollable content area -->
@@ -71,7 +65,7 @@
             <div class="flex gap-3.5 mb-4">
               <!-- Image -->
               <div
-                class="w-[90px] h-[90px] md:w-[100px] md:h-[100px] rounded-xl md:rounded-2xl overflow-hidden shrink-0 border theme-border cursor-pointer"
+                class="w-[90px] h-[90px] md:w-[100px] md:h-[100px] rounded-xl md:rounded-2xl overflow-hidden shrink-0 border cursor-pointer"
                 @click="goToDetail"
               >
                 <img
@@ -80,48 +74,33 @@
                   :alt="productTitle"
                   class="w-full h-full object-cover"
                 />
-                <div v-else class="w-full h-full flex items-center justify-center theme-surface-muted">
-                  <svg class="w-7 h-7 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                <div v-else class="w-full h-full flex items-center justify-center bg-muted">
+                  <ImageIcon class="w-7 h-7 text-muted-foreground" :stroke-width="1.5" />
                 </div>
               </div>
 
               <!-- Info -->
               <div class="flex-1 min-w-0 flex flex-col">
                 <h3
-                  class="text-sm md:text-[15px] font-semibold theme-text-primary line-clamp-2 leading-snug cursor-pointer hover:underline decoration-gray-300 dark:decoration-gray-600 underline-offset-2"
+                  class="text-sm md:text-[15px] font-semibold text-foreground line-clamp-2 leading-snug cursor-pointer hover:underline decoration-gray-300 dark:decoration-gray-600 underline-offset-2"
                   @click="goToDetail"
                 >
                   {{ productTitle }}
                 </h3>
 
                 <div class="mt-1.5 flex flex-wrap items-center gap-1">
-                  <span
-                    class="theme-badge text-[10px] px-1.5 py-px"
-                    :class="product.fulfillment_type === 'auto' ? 'theme-badge-info' : 'theme-badge-neutral'"
-                  >
+                  <Badge :variant="product.fulfillment_type === 'auto' ? 'info' : 'neutral'" size="xs">
                     {{ getFulfillmentTypeLabel(product.fulfillment_type) }}
-                  </span>
-                  <span
-                    class="theme-badge text-[10px] px-1.5 py-px"
-                    :class="getStockBadgeClass(product.stock_status)"
-                  >
+                  </Badge>
+                  <Badge :variant="getStockBadgeVariant(product.stock_status)" size="xs">
                     {{ getStockStatusLabel(product) }}
-                  </span>
-                  <span
-                    v-if="hasSelectedSkuWholesalePrice"
-                    class="theme-badge theme-badge-success text-[10px] px-1.5 py-px"
-                  >
+                  </Badge>
+                  <Badge v-if="hasSelectedSkuWholesalePrice" variant="success" size="xs">
                     {{ t('products.wholesaleTag') }}
-                  </span>
-                  <span
-                    v-if="showSelectedSkuMemberBadge"
-                    class="theme-badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-[10px] px-1.5 py-px"
-                  >
+                  </Badge>
+                  <Badge v-if="showSelectedSkuMemberBadge" variant="warning" size="xs">
                     {{ t('products.memberPriceTag') }}
-                  </span>
+                  </Badge>
                 </div>
 
                 <!-- Price -->
@@ -133,7 +112,7 @@
                     >
                       {{ formatPrice(selectedSkuWholesaleFinalPrice!, siteCurrency) }}
                     </span>
-                    <span class="ml-1.5 text-xs theme-text-muted line-through">
+                    <span class="ml-1.5 text-xs text-muted-foreground line-through">
                       {{ formatPrice(selectedSku.price_amount, siteCurrency) }}
                     </span>
                   </template>
@@ -144,7 +123,7 @@
                     >
                       {{ formatPrice(selectedSkuPromotionFinalPrice!, siteCurrency) }}
                     </span>
-                    <span class="ml-1.5 text-xs theme-text-muted line-through">
+                    <span class="ml-1.5 text-xs text-muted-foreground line-through">
                       {{ formatPrice(selectedSku.price_amount, siteCurrency) }}
                     </span>
                   </template>
@@ -152,12 +131,12 @@
                     <span class="text-lg md:text-xl font-bold text-amber-600 dark:text-amber-300">
                       {{ formatPrice(selectedSkuMemberPrice!, siteCurrency) }}
                     </span>
-                    <span class="ml-1.5 text-xs theme-text-muted line-through">
+                    <span class="ml-1.5 text-xs text-muted-foreground line-through">
                       {{ formatPrice(selectedSku.price_amount, siteCurrency) }}
                     </span>
                   </template>
                   <template v-else-if="selectedSku">
-                    <span class="text-lg md:text-xl font-bold theme-text-accent">
+                    <span class="text-lg md:text-xl font-bold text-primary">
                       {{ formatPrice(selectedSku.price_amount, siteCurrency) }}
                     </span>
                   </template>
@@ -165,12 +144,12 @@
                     <span class="text-lg md:text-xl font-bold text-rose-600 dark:text-rose-400">
                       {{ formatPrice(getPromotionPriceAmount(product), siteCurrency) }}
                     </span>
-                    <span class="ml-1.5 text-xs theme-text-muted line-through">
+                    <span class="ml-1.5 text-xs text-muted-foreground line-through">
                       {{ formatPrice(product.price_amount, siteCurrency) }}
                     </span>
                   </template>
                   <template v-else>
-                    <span class="text-lg md:text-xl font-bold theme-text-accent">
+                    <span class="text-lg md:text-xl font-bold text-primary">
                       {{ formatPrice(product.price_amount, siteCurrency) }}
                     </span>
                   </template>
@@ -178,22 +157,16 @@
               </div>
 
               <!-- Mobile close -->
-              <button
-                type="button"
-                class="md:hidden self-start -mr-1 p-1.5 rounded-lg theme-text-muted hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                @click="close"
-              >
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <Button type="button" variant="ghost" size="icon" class="md:hidden self-start -mr-1 text-muted-foreground" @click="close">
+                <X />
+              </Button>
             </div>
 
             <!-- Divider -->
-            <div class="h-px bg-gray-100 dark:bg-white/[0.06] -mx-4 md:-mx-5 mb-4" />
+            <div class="h-px bg-border -mx-4 md:-mx-5 mb-4" />
 
             <!-- Product description -->
-            <p v-if="productDescription" class="mb-4 text-xs leading-relaxed theme-text-secondary line-clamp-3">
+            <p v-if="productDescription" class="mb-4 text-xs leading-relaxed text-muted-foreground line-clamp-3">
               {{ productDescription }}
             </p>
 
@@ -211,9 +184,7 @@
 
             <div v-if="hasPromotionRules(product)" class="mb-4 rounded-lg border border-orange-200 dark:border-orange-800/50 bg-orange-50/50 dark:bg-orange-950/20 px-3 py-2">
               <div class="flex items-center gap-1 mb-1">
-                <svg class="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
-                </svg>
+                <Tag class="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" />
                 <span class="text-[11px] font-semibold text-orange-700 dark:text-orange-300">
                   {{ t('products.promotionRulesTitle') }}
                 </span>
@@ -228,7 +199,7 @@
 
             <!-- SKU Selection -->
             <div v-if="activeSkus.length > 1" class="mb-4">
-              <div class="mb-2 text-xs font-medium theme-text-muted">
+              <div class="mb-2 text-xs font-medium text-muted-foreground">
                 {{ t('quickBuy.selectSku') }}
               </div>
               <div class="flex flex-wrap gap-2">
@@ -239,8 +210,8 @@
                   class="rounded-lg border px-3 py-1.5 text-[13px] transition-all"
                   :class="[
                     normalizeSkuId(sku.id) === selectedSkuId
-                      ? 'theme-selected-surface ring-1 ring-primary/30 font-semibold'
-                      : 'theme-btn-secondary font-medium',
+                      ? 'border-primary/45 bg-primary/10 ring-1 ring-primary/30 font-semibold'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium',
                     isSkuPurchasable(sku) ? 'cursor-pointer' : 'cursor-not-allowed opacity-45 border-dashed',
                   ]"
                   :disabled="!isSkuPurchasable(sku)"
@@ -257,7 +228,7 @@
 
             <!-- Selected SKU stock info -->
             <div v-if="selectedSku" class="mb-4 flex items-center gap-2 text-xs">
-              <span class="theme-text-muted">{{ t('quickBuy.stock') }}:</span>
+              <span class="text-muted-foreground">{{ t('quickBuy.stock') }}:</span>
               <span
                 class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium"
                 :class="skuStockBadgeClass(selectedSku)"
@@ -272,83 +243,79 @@
 
             <!-- Quantity -->
             <div class="mb-4 flex items-center gap-3">
-              <span class="text-xs font-medium theme-text-muted">{{ t('quickBuy.quantity') }}</span>
-              <div class="flex items-center rounded-lg border theme-border overflow-hidden">
+              <span class="text-xs font-medium text-muted-foreground">{{ t('quickBuy.quantity') }}</span>
+              <div class="flex items-center rounded-lg border overflow-hidden">
                 <button
                   type="button"
-                  class="w-9 h-9 flex items-center justify-center theme-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
+                  class="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
                   :disabled="quantity <= effectiveMin"
                   @click="quantity = Math.max(effectiveMin, quantity - 1)"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path stroke-linecap="round" d="M20 12H4" />
-                  </svg>
+                  <Minus class="w-3.5 h-3.5" :stroke-width="2.5" />
                 </button>
                 <input
                   type="text"
                   inputmode="numeric"
-                  class="w-12 h-9 text-center text-sm font-semibold theme-text-primary border-x theme-border bg-transparent outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  class="w-12 h-9 text-center text-sm font-semibold text-foreground border-x bg-transparent outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   :value="quantity"
                   @change="handleQuantityInput($event)"
                   @keydown.enter.prevent="($event.target as HTMLInputElement)?.blur()"
                 />
                 <button
                   type="button"
-                  class="w-9 h-9 flex items-center justify-center theme-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
+                  class="w-9 h-9 flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
                   :disabled="effectiveLimit !== null && quantity >= effectiveLimit"
                   @click="quantity = quantity + 1"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path stroke-linecap="round" d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus class="w-3.5 h-3.5" :stroke-width="2.5" />
                 </button>
               </div>
             </div>
 
             <!-- Warning -->
-            <p v-if="stockBelowMinPurchase" class="mb-4 rounded-lg theme-alert-warning px-3 py-2 text-xs font-medium">
+            <p v-if="stockBelowMinPurchase" class="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-warning">
               {{ t('productDetail.stockBelowMinPurchase', { count: effectiveMin }) }}
             </p>
-            <p v-else-if="purchaseWarning" class="mb-4 rounded-lg theme-alert-warning px-3 py-2 text-xs font-medium">
+            <p v-else-if="purchaseWarning" class="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-warning">
               {{ purchaseWarning }}
             </p>
           </div>
 
           <!-- Actions (sticky bottom) -->
-          <div class="shrink-0 px-4 md:px-5 pt-3 pb-3 md:pb-5 border-t theme-border theme-safe-bottom">
-            <button
+          <div class="shrink-0 px-4 md:px-5 pt-3 pb-3 md:pb-5 border-t theme-safe-bottom">
+            <Button
               v-if="requiresLogin"
+              class="w-full py-3 h-auto min-h-[44px] rounded-xl text-sm font-semibold"
               @click="goLogin"
-              class="w-full py-3 theme-btn-primary font-semibold rounded-xl min-h-[44px] text-sm cursor-pointer"
             >
               {{ t('quickBuy.loginToBuy') }}
-            </button>
+            </Button>
             <div v-else-if="isSoldOut(product)" class="flex gap-3">
-              <button
+              <Button
+                variant="secondary"
+                class="flex-1 py-3 h-auto min-h-[44px] rounded-xl text-sm font-semibold"
                 @click="goToDetail"
-                class="flex-1 py-3 border theme-btn-secondary font-semibold rounded-xl min-h-[44px] text-sm cursor-pointer"
               >
                 {{ t('quickBuy.viewDetail') }}
-              </button>
+              </Button>
             </div>
             <div v-else class="flex gap-3">
-              <button
+              <Button
+                variant="secondary"
+                :disabled="!canPurchase"
+                class="flex-1 py-3 h-auto min-h-[44px] rounded-xl text-sm font-semibold gap-1.5"
                 @click="handleAddToCart"
-                :disabled="!canPurchase"
-                class="flex-1 py-3 border theme-btn-secondary font-semibold rounded-xl cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 min-h-[44px] text-sm flex items-center justify-center gap-1.5"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-                </svg>
+                <ShoppingCart class="w-4 h-4" />
                 {{ t('quickBuy.addToCart') }}
-              </button>
-              <button
-                @click="handleBuyNow"
+              </Button>
+              <Button
                 :disabled="!canPurchase"
-                class="flex-1 py-3 theme-btn-primary font-semibold rounded-xl cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 min-h-[44px] text-sm"
+                class="flex-1 py-3 h-auto min-h-[44px] rounded-xl text-sm font-semibold"
+                @click="handleBuyNow"
               >
                 {{ t('quickBuy.buyNow') }}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -372,6 +339,9 @@ import { normalizeSkuId, buildSkuDisplayText } from '../utils/sku'
 import { resolveSkuAvailableStock, resolveSkuStockDisplay, type PublicStockDisplay } from '../utils/publicStock'
 import { useLocalized, useProductLabels } from '../composables/useProduct'
 import { toast } from '../composables/useToast'
+import { X, Image as ImageIcon, Tag, Minus, Plus, ShoppingCart } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 const props = defineProps<{
   product: any
@@ -394,7 +364,7 @@ const userProfileStore = useUserProfileStore()
 const { getLocalizedText, siteCurrency, formatPrice } = useLocalized()
 const {
   getFulfillmentTypeLabel,
-  getStockBadgeClass,
+  getStockBadgeVariant,
   getStockStatusLabel,
   isSoldOut,
   hasPromotionPrice,

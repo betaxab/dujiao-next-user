@@ -1,157 +1,141 @@
 <template>
-  <div class="min-h-screen theme-page pt-24 pb-16">
+  <div class="min-h-screen bg-background text-foreground pt-24 pb-16">
     <div class="container mx-auto px-4">
       <div class="mb-8 flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-black theme-text-primary mb-2">{{ t('rechargeOrder.title') }}</h1>
-          <p class="theme-text-muted text-sm">{{ t('rechargeOrder.subtitle') }}</p>
+          <h1 class="text-3xl font-black text-foreground mb-2">{{ t('rechargeOrder.title') }}</h1>
+          <p class="text-muted-foreground text-sm">{{ t('rechargeOrder.subtitle') }}</p>
         </div>
-        <router-link to="/me/orders" class="theme-link-muted text-sm">{{ t('rechargeOrder.backList') }}</router-link>
+        <router-link to="/me/orders" class="text-muted-foreground transition-colors hover:text-foreground text-sm">{{ t('rechargeOrder.backList') }}</router-link>
       </div>
 
-      <div v-if="loading" class="h-40 border theme-surface-muted rounded-2xl animate-pulse"></div>
+      <div v-if="loading" class="h-40 border bg-muted rounded-2xl animate-pulse"></div>
 
-      <div v-else-if="!recharge" class="theme-panel rounded-2xl p-12 text-center">
-        <svg class="mx-auto h-12 w-12 theme-text-muted opacity-50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-        </svg>
-        <p class="theme-text-muted mb-4">{{ t('rechargeOrder.notFound') }}</p>
-        <button @click="loadDetail()" class="inline-flex items-center gap-2 rounded-xl theme-btn-primary px-5 py-2.5 text-sm font-semibold">
-          {{ t('errorBoundary.retry') }}
-        </button>
-      </div>
+      <EmptyState
+        v-else-if="!recharge"
+        icon="alert"
+        :title="t('rechargeOrder.notFound')"
+        :action-label="t('errorBoundary.retry')"
+        @action="loadDetail()"
+      />
 
       <div v-else class="space-y-6">
         <!-- 头部信息 -->
-        <div class="theme-panel rounded-2xl p-6">
+        <div class="bg-card rounded-2xl p-6">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div class="text-xs uppercase tracking-wider theme-text-muted">{{ t('personalCenter.wallet.rechargeNoLabel') }}</div>
-              <div class="text-sm font-semibold theme-text-primary mt-1">{{ recharge.recharge_no }}</div>
-              <div class="text-xs theme-text-muted mt-2">{{ t('rechargeOrder.createdAtLabel') }}：{{ formatDate(recharge.created_at) }}</div>
+              <div class="text-xs uppercase tracking-wider text-muted-foreground">{{ t('personalCenter.wallet.rechargeNoLabel') }}</div>
+              <div class="text-sm font-semibold text-foreground mt-1">{{ recharge.recharge_no }}</div>
+              <div class="text-xs text-muted-foreground mt-2">{{ t('rechargeOrder.createdAtLabel') }}：{{ formatDate(recharge.created_at) }}</div>
             </div>
             <div class="flex flex-col items-start md:items-end gap-2">
-              <div class="text-xs uppercase tracking-wider theme-text-muted">{{ t('rechargeOrder.rechargeAmount') }}</div>
-              <div class="text-lg font-bold theme-text-primary">{{ formatMoney(recharge.amount, recharge.currency) }}</div>
+              <div class="text-xs uppercase tracking-wider text-muted-foreground">{{ t('rechargeOrder.rechargeAmount') }}</div>
+              <div class="text-lg font-bold text-foreground">{{ formatMoney(recharge.amount, recharge.currency) }}</div>
             </div>
             <div class="flex items-center gap-3">
-              <span class="theme-badge px-3 py-1 text-xs font-medium" :class="rechargeStatusBadgeClass(recharge.status)">
+              <Badge :variant="rechargeStatusVariant(recharge.status)" size="sm">
                 {{ rechargeStatusText(recharge.status) }}
-              </span>
+              </Badge>
             </div>
           </div>
         </div>
 
         <!-- 金额明细 -->
-        <div class="theme-panel rounded-2xl p-6">
+        <div class="bg-card rounded-2xl p-6">
           <h2 class="text-lg font-bold mb-4">{{ t('rechargeOrder.amountTitle') }}</h2>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-            <div class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('rechargeOrder.rechargeAmount') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ formatMoney(recharge.amount, recharge.currency) }}</div>
+            <div class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('rechargeOrder.rechargeAmount') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ formatMoney(recharge.amount, recharge.currency) }}</div>
             </div>
-            <div class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('payment.feeRateLabel') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ feeRateDisplay }}</div>
+            <div class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('payment.feeRateLabel') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ feeRateDisplay }}</div>
             </div>
-            <div class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('payment.feeAmountLabel') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ formatMoney(recharge.fee_amount, recharge.currency) }}</div>
+            <div class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('payment.feeAmountLabel') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ formatMoney(recharge.fee_amount, recharge.currency) }}</div>
             </div>
-            <div class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('personalCenter.wallet.payAmountLabel') }}</div>
-              <div class="theme-text-primary font-mono mt-1 font-bold">{{ formatMoney(recharge.payable_amount, recharge.currency) }}</div>
+            <div class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('personalCenter.wallet.payAmountLabel') }}</div>
+              <div class="text-foreground font-mono mt-1 font-bold">{{ formatMoney(recharge.payable_amount, recharge.currency) }}</div>
             </div>
           </div>
         </div>
 
         <!-- 时间信息 -->
-        <div class="theme-panel rounded-2xl p-6">
+        <div class="bg-card rounded-2xl p-6">
           <h2 class="text-lg font-bold mb-4">{{ t('rechargeOrder.timeTitle') }}</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('rechargeOrder.createdAtLabel') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ formatDate(recharge.created_at) }}</div>
+            <div class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('rechargeOrder.createdAtLabel') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ formatDate(recharge.created_at) }}</div>
             </div>
-            <div v-if="recharge.paid_at" class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('rechargeOrder.paidAtLabel') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ formatDate(recharge.paid_at) }}</div>
+            <div v-if="recharge.paid_at" class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('rechargeOrder.paidAtLabel') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ formatDate(recharge.paid_at) }}</div>
             </div>
-            <div v-if="payment?.expires_at" class="theme-surface-soft border rounded-xl p-4">
-              <div class="text-xs theme-text-muted">{{ t('payment.expiresAt') }}</div>
-              <div class="theme-text-primary font-mono mt-1">{{ formatDate(payment.expires_at) }}</div>
+            <div v-if="payment?.expires_at" class="bg-secondary border rounded-xl p-4">
+              <div class="text-xs text-muted-foreground">{{ t('payment.expiresAt') }}</div>
+              <div class="text-foreground font-mono mt-1">{{ formatDate(payment.expires_at) }}</div>
             </div>
           </div>
         </div>
 
         <!-- 备注 -->
-        <div v-if="recharge.remark" class="theme-panel rounded-2xl p-6">
+        <div v-if="recharge.remark" class="bg-card rounded-2xl p-6">
           <h2 class="text-lg font-bold mb-2">{{ t('rechargeOrder.remarkLabel') }}</h2>
-          <p class="text-sm theme-text-muted">{{ recharge.remark }}</p>
+          <p class="text-sm text-muted-foreground">{{ recharge.remark }}</p>
         </div>
 
         <!-- 支付区域（仅待支付状态） -->
-        <div v-if="isPending" class="theme-panel rounded-2xl p-6">
+        <div v-if="isPending" class="bg-card rounded-2xl p-6">
           <h2 class="text-lg font-bold mb-4">{{ t('rechargeOrder.paymentTitle') }}</h2>
-          <div v-if="isPending" class="mb-3 text-xs theme-text-muted">
+          <div v-if="isPending" class="mb-3 text-xs text-muted-foreground">
             {{ t('personalCenter.wallet.pendingHint') }}
           </div>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div v-if="showQRCode" class="rounded-xl border theme-surface-soft p-4">
-              <div class="mb-3 text-sm font-semibold theme-text-primary">{{ t('payment.qrTitle') }}</div>
+            <div v-if="showQRCode" class="rounded-xl border bg-secondary p-4">
+              <div class="mb-3 text-sm font-semibold text-foreground">{{ t('payment.qrTitle') }}</div>
               <div class="flex items-center justify-center">
                 <img :src="qrImageUrl" alt="Recharge QR" class="h-52 w-52 object-contain" />
               </div>
-              <div v-if="qrUsingPayLinkFallback" class="mt-3 text-xs theme-text-muted">
+              <div v-if="qrUsingPayLinkFallback" class="mt-3 text-xs text-muted-foreground">
                 {{ t('payment.qrFallbackHint') }}
               </div>
             </div>
-            <div class="rounded-xl border theme-surface-soft p-4">
-              <div v-if="hasCryptoPaymentDetails" class="space-y-2 rounded-xl border theme-border bg-white/5 p-3 text-sm">
+            <div class="rounded-xl border bg-secondary p-4">
+              <div v-if="hasCryptoPaymentDetails" class="space-y-2 rounded-xl border bg-white/5 p-3 text-sm">
                 <div
                   v-for="item in cryptoPaymentDetails"
                   :key="item.key"
-                  class="flex flex-col gap-1 border-b theme-border pb-2 last:border-b-0 last:pb-0"
+                  class="flex flex-col gap-1 border-b pb-2 last:border-b-0 last:pb-0"
                 >
-                  <span class="text-xs theme-text-muted">{{ item.label }}</span>
-                  <span class="min-w-0 font-semibold theme-text-primary break-all">
+                  <span class="text-xs text-muted-foreground">{{ item.label }}</span>
+                  <span class="min-w-0 font-semibold text-foreground break-all">
                     {{ item.value }}
-                    <span v-if="item.detail" class="ml-1 font-normal theme-text-muted">({{ item.detail }})</span>
+                    <span v-if="item.detail" class="ml-1 font-normal text-muted-foreground">({{ item.detail }})</span>
                   </span>
                 </div>
                 <div v-if="cryptoWalletAddress" class="flex flex-wrap items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-                    @click="handleCopyWalletAddress"
-                  >
+                  <Button type="button" variant="secondary" size="sm" @click="handleCopyWalletAddress">
                     {{ t('payment.copyWalletAddress') }}
-                  </button>
+                  </Button>
                   <span v-if="walletAddressCopied" class="text-xs text-emerald-500">{{ t('payment.copied') }}</span>
                 </div>
               </div>
               <div class="mt-4 flex flex-wrap items-center gap-3">
-                <button
-                  v-if="payLink"
-                  type="button"
-                  @click="handleOpenPayLink"
-                  class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-                >
+                <Button v-if="payLink" type="button" variant="secondary" size="sm" @click="handleOpenPayLink">
                   {{ t('payment.openPayLink') }}
-                </button>
-                <button
-                  type="button"
-                  class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-                  :disabled="checkingPayment"
-                  @click="checkPayment"
-                >
+                </Button>
+                <Button type="button" variant="secondary" size="sm" :disabled="checkingPayment" @click="checkPayment">
                   {{ checkingPayment ? t('personalCenter.wallet.checkingPayStatus') : t('personalCenter.wallet.checkPayStatus') }}
-                </button>
+                </Button>
               </div>
-              <div v-if="payLink" class="mt-3 text-xs theme-text-muted break-all">
+              <div v-if="payLink" class="mt-3 text-xs text-muted-foreground break-all">
                 {{ t('payment.payLinkLabel') }}：{{ payLink }}
               </div>
-              <div v-if="showTelegramPayHint" class="mt-3 text-xs theme-text-muted">
+              <div v-if="showTelegramPayHint" class="mt-3 text-xs text-muted-foreground">
                 {{ t('payment.telegramExternalHint') }}
               </div>
             </div>
@@ -159,8 +143,8 @@
         </div>
 
         <!-- 支付成功提示 -->
-        <div v-if="recharge.status === 'success'" class="theme-panel rounded-2xl p-6 border-l-4 border-green-500">
-          <p class="text-sm font-semibold theme-text-primary">{{ t('personalCenter.wallet.rechargeSuccess') }}</p>
+        <div v-if="recharge.status === 'success'" class="bg-card rounded-2xl p-6 border-l-4 border-green-500">
+          <p class="text-sm font-semibold text-foreground">{{ t('personalCenter.wallet.rechargeSuccess') }}</p>
         </div>
       </div>
     </div>
@@ -175,7 +159,11 @@ import { walletAPI } from '../api/wallet'
 import { useTelegramMiniAppStore } from '../stores/telegramMiniApp'
 import { copyText } from '../utils/clipboard'
 import { basisPointsToPercent, rateToBasisPoints } from '../utils/money'
+import type { BadgeTone } from '../utils/status'
 import QRCode from 'qrcode'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import EmptyState from '../components/EmptyState.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -271,11 +259,11 @@ const rechargeStatusText = (status?: string) => {
   return translated
 }
 
-const rechargeStatusBadgeClass = (status?: string) => {
+const rechargeStatusVariant = (status?: string): BadgeTone => {
   const normalized = String(status || '').toLowerCase()
-  if (normalized === 'success') return 'theme-badge-success'
-  if (normalized === 'failed' || normalized === 'expired') return 'theme-badge-danger'
-  return 'theme-badge-warning'
+  if (normalized === 'success') return 'success'
+  if (normalized === 'failed' || normalized === 'expired') return 'danger'
+  return 'warning'
 }
 
 const formatMoney = (amount?: string, currency?: string) => {

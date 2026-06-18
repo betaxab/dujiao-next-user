@@ -1,57 +1,52 @@
 <template>
-  <div class="relative flex min-h-screen items-center justify-center theme-page theme-auth-page px-4 py-16 sm:px-6">
+  <div class="relative flex min-h-screen items-center justify-center bg-background text-foreground theme-auth-page px-4 py-16 sm:px-6">
     <div class="relative z-10 w-full max-w-lg">
       <div class="mb-4 flex items-center justify-between px-1">
-        <router-link
-          to="/"
-          class="theme-nav-link rounded-full gap-1"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          {{ t('auth.login.backHome') }}
-        </router-link>
-        <span class="rounded-full border theme-pill-neutral px-3 py-1 text-xs font-semibold">
+        <Button as-child variant="ghost" size="sm" class="rounded-full gap-1 text-muted-foreground">
+          <router-link to="/">
+            <ArrowLeft class="h-4 w-4" />
+            {{ t('auth.login.backHome') }}
+          </router-link>
+        </Button>
+        <Badge variant="neutral" size="sm" class="rounded-full">
           {{ t('auth.forgot.title') }}
-        </span>
+        </Badge>
       </div>
 
-      <div class="theme-auth-card">
+      <Card class="rounded-3xl p-7 shadow-lg backdrop-blur-sm sm:p-9">
         <div class="mb-8 text-center">
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] theme-text-accent">{{ brandSiteName }}</p>
-          <h1 class="mt-3 text-3xl font-black theme-text-primary">{{ t('auth.forgot.title') }}</h1>
-          <p class="mt-2 text-sm theme-text-muted">{{ t('auth.forgot.subtitle') }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-primary">{{ brandSiteName }}</p>
+          <h1 class="mt-3 text-3xl font-black text-foreground">{{ t('auth.forgot.title') }}</h1>
+          <p class="mt-2 text-sm text-muted-foreground">{{ t('auth.forgot.subtitle') }}</p>
         </div>
 
-        <div v-if="!emailVerificationEnabled" class="rounded-xl border theme-alert-danger px-4 py-4 text-center">
-          <p class="text-sm font-medium">{{ t('auth.forgot.disabled') }}</p>
-          <router-link to="/auth/login" class="mt-3 inline-block theme-link-muted text-sm">
-            {{ t('auth.forgot.backLogin') }}
-          </router-link>
-        </div>
+        <Alert v-if="!emailVerificationEnabled" variant="destructive" class="text-center">
+          <AlertDescription class="block">
+            <p class="text-sm font-medium">{{ t('auth.forgot.disabled') }}</p>
+            <router-link to="/auth/login" class="mt-3 inline-block text-muted-foreground transition-colors hover:text-foreground text-sm">
+              {{ t('auth.forgot.backLogin') }}
+            </router-link>
+          </AlertDescription>
+        </Alert>
 
-        <form v-else class="theme-auth-form" @submit.prevent="handleReset">
+        <form v-else class="space-y-6" @submit.prevent="handleReset">
           <div>
-            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
-              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <Mail class="h-3.5 w-3.5 opacity-60" />
               {{ t('auth.forgot.emailLabel') }}
             </label>
-            <input
+            <Input
               v-model="email"
               type="email"
               required
-              class="w-full form-input-lg"
+              class="h-11"
               :placeholder="t('auth.forgot.emailPlaceholder')"
             />
           </div>
 
           <div v-if="sendCodeCaptchaEnabled">
-            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
-              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <ShieldCheck class="h-3.5 w-3.5 opacity-60" />
               {{ t('auth.common.captchaLabel') }}
             </label>
             <ImageCaptcha
@@ -70,71 +65,59 @@
           </div>
 
           <div>
-            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
-              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <ShieldCheck class="h-3.5 w-3.5 opacity-60" />
               {{ t('auth.forgot.codeLabel') }}
             </label>
             <div class="flex flex-col gap-2 sm:flex-row">
-              <input
+              <Input
                 v-model="code"
                 type="text"
                 required
-                class="min-w-0 flex-1 form-input-lg"
+                class="h-11 min-w-0 flex-1"
                 :placeholder="t('auth.forgot.codePlaceholder')"
               />
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                class="h-11 whitespace-nowrap"
                 @click="handleSendCode"
                 :disabled="sending || countdown > 0"
-                class="whitespace-nowrap rounded-xl border theme-btn-secondary px-4 py-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {{ countdown > 0 ? t('auth.common.countdown', { seconds: countdown }) : t('auth.common.sendCode') }}
-              </button>
+              </Button>
             </div>
           </div>
 
           <div>
-            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] theme-text-muted">
-              <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
+            <label class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <KeyRound class="h-3.5 w-3.5 opacity-60" />
               {{ t('auth.forgot.newPasswordLabel') }}
             </label>
-            <input
+            <Input
               v-model="newPassword"
               type="password"
               required
-              class="w-full form-input-lg"
+              class="h-11"
               :placeholder="t('auth.forgot.newPasswordPlaceholder')"
             />
           </div>
 
-          <div
-            v-if="error"
-            class="rounded-xl border theme-alert-danger px-4 py-3 text-center text-sm"
-          >
-            {{ error }}
-          </div>
+          <Alert v-if="error" variant="destructive" class="text-center">
+            <AlertDescription>{{ error }}</AlertDescription>
+          </Alert>
 
-          <button
-            type="submit"
-            :disabled="userAuthStore.loading"
-            class="inline-flex w-full items-center justify-center rounded-xl theme-btn-primary px-4 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <svg v-if="!userAuthStore.loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+          <Button type="submit" :disabled="userAuthStore.loading" class="h-11 w-full font-bold">
+            <RotateCw v-if="!userAuthStore.loading" class="h-4 w-4" />
             {{ userAuthStore.loading ? t('auth.forgot.submitting') : t('auth.forgot.submit') }}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
 
       <div class="mt-4 text-center">
         <router-link
           to="/auth/login"
-          class="theme-link-muted text-sm"
+          class="text-muted-foreground transition-colors hover:text-foreground text-sm"
         >
           {{ t('auth.forgot.backLogin') }}
         </router-link>
@@ -153,6 +136,12 @@ import { useAppStore } from '../../stores/app'
 import type { CaptchaPayload } from '../../api'
 import ImageCaptcha from '../../components/captcha/ImageCaptcha.vue'
 import TurnstileCaptcha from '../../components/captcha/TurnstileCaptcha.vue'
+import { ArrowLeft, Mail, ShieldCheck, KeyRound, RotateCw } from 'lucide-vue-next'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 const router = useRouter()
 const userAuthStore = useUserAuthStore()

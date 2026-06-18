@@ -1,131 +1,127 @@
 <template>
   <div class="space-y-6">
-    <div v-if="panelAlert" class="rounded-xl border px-4 py-3 text-sm shadow-sm" :class="pageAlertClass(panelAlert.level)">
-      {{ panelAlert.message }}
-    </div>
+    <Alert v-if="panelAlert" :variant="pageAlertVariant(panelAlert.level)" :class="pageAlertToneClass(panelAlert.level)">
+      <AlertDescription>{{ panelAlert.message }}</AlertDescription>
+    </Alert>
 
-    <div class="theme-personal-card">
+    <div class="rounded-2xl border bg-card p-7 shadow-sm">
       <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 class="text-xl font-bold theme-text-primary">{{ t('personalCenter.reseller.managementTitle') }}</h2>
-          <p class="mt-1 text-sm theme-text-muted">{{ t('personalCenter.reseller.managementSubtitle') }}</p>
+          <h2 class="text-xl font-bold text-foreground">{{ t('personalCenter.reseller.managementTitle') }}</h2>
+          <p class="mt-1 text-sm text-muted-foreground">{{ t('personalCenter.reseller.managementSubtitle') }}</p>
         </div>
-        <span v-if="!managementLoading" class="theme-badge px-3 py-1 text-xs font-semibold" :class="managementStatusClass">
+        <Badge v-if="!managementLoading" :variant="managementStatusVariant" size="sm">
           {{ managementStatusText }}
-        </span>
+        </Badge>
       </div>
 
       <div v-if="managementLoading" class="space-y-3">
-        <div v-for="idx in 3" :key="`management-${idx}`" class="h-16 animate-pulse rounded-xl border theme-surface-muted"></div>
+        <div v-for="idx in 3" :key="`management-${idx}`" class="h-16 animate-pulse rounded-xl border bg-muted"></div>
       </div>
 
       <template v-else>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.managementStatusLabel') }}</div>
-            <div class="mt-2 text-base font-bold theme-text-primary">{{ managementStatusText }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.managementStatusLabel') }}</div>
+            <div class="mt-2 text-base font-bold text-foreground">{{ managementStatusText }}</div>
           </div>
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.markupRange') }}</div>
-            <div class="mt-2 text-base font-bold theme-text-primary">{{ managementMarkupText }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.markupRange') }}</div>
+            <div class="mt-2 text-base font-bold text-foreground">{{ managementMarkupText }}</div>
           </div>
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.domainCount') }}</div>
-            <div class="mt-2 text-base font-bold theme-text-primary">{{ managementDomains.length }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.domainCount') }}</div>
+            <div class="mt-2 text-base font-bold text-foreground">{{ managementDomains.length }}</div>
           </div>
         </div>
 
-        <div v-if="!management?.opened || managementState.canApply" class="mt-5 rounded-xl border theme-surface-soft p-4">
+        <div v-if="!management?.opened || managementState.canApply" class="mt-5 rounded-xl border bg-secondary p-4">
           <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <h3 class="text-base font-bold theme-text-primary">
+              <h3 class="text-base font-bold text-foreground">
                 {{ management?.opened ? t('personalCenter.reseller.reapplyTitle') : t('personalCenter.reseller.applyTitle') }}
               </h3>
-              <p class="mt-1 text-sm theme-text-muted">{{ applyNoticeText }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ applyNoticeText }}</p>
               <p v-if="management?.profile?.reject_reason" class="mt-2 text-sm text-red-600 dark:text-red-300">
                 {{ t('personalCenter.reseller.rejectReason', { reason: management.profile.reject_reason }) }}
               </p>
             </div>
-            <button
+            <Button
               v-if="managementState.canApply"
               type="button"
               :disabled="submittingApply"
-              class="inline-flex items-center justify-center rounded-xl theme-btn-primary px-5 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
+              class="font-bold"
               @click="handleApplyProfile"
             >
               {{ submittingApply ? t('personalCenter.reseller.applying') : t('personalCenter.reseller.applySubmit') }}
-            </button>
+            </Button>
           </div>
-          <textarea
+          <Textarea
             v-if="managementState.canApply"
-            v-model.trim="applyForm.reason"
+            v-model="applyForm.reason"
             rows="3"
-            class="mt-4 w-full form-input-lg"
+            class="mt-4"
             :disabled="submittingApply"
             :placeholder="t('personalCenter.reseller.applyReasonPlaceholder')"
-          ></textarea>
+          />
         </div>
 
-        <div v-if="managementState.canSubmitDomain" class="mt-5 rounded-xl border theme-surface-soft p-4">
-          <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.customDomainTitle') }}</h3>
+        <div v-if="managementState.canSubmitDomain" class="mt-5 rounded-xl border bg-secondary p-4">
+          <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.customDomainTitle') }}</h3>
           <form class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto]" @submit.prevent="handleSubmitDomain">
-            <input
-              v-model.trim="domainForm.domain"
+            <Input
+              v-model="domainForm.domain"
               type="text"
-              class="form-input-lg"
+              class="h-11"
               :disabled="submittingDomain"
               :placeholder="t('personalCenter.reseller.customDomainPlaceholder')"
             />
-            <button
+            <Button
               type="submit"
               :disabled="submittingDomain"
-              class="inline-flex items-center justify-center rounded-xl theme-btn-primary px-5 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
+              class="h-11 font-bold"
             >
               {{ submittingDomain ? t('personalCenter.reseller.submittingDomain') : t('personalCenter.reseller.submitDomain') }}
-            </button>
+            </Button>
           </form>
         </div>
 
         <div class="mt-5">
           <div class="mb-3 flex items-center justify-between gap-3">
-            <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.domainTitle') }}</h3>
-            <button
-              type="button"
-              class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-              @click="loadManagementSnapshot"
-            >
+            <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.domainTitle') }}</h3>
+            <Button type="button" variant="secondary" size="sm" @click="loadManagementSnapshot">
               {{ t('orders.filters.refresh') }}
-            </button>
+            </Button>
           </div>
-          <div v-if="managementDomains.length === 0" class="rounded-xl border border-dashed theme-surface-soft px-4 py-6 text-sm theme-text-muted">
+          <div v-if="managementDomains.length === 0" class="rounded-xl border border-dashed bg-secondary px-4 py-6 text-sm text-muted-foreground">
             {{ t('personalCenter.reseller.domainEmpty') }}
           </div>
           <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div v-for="item in managementDomains" :key="item.id" class="rounded-xl border theme-surface-soft p-4">
+            <div v-for="item in managementDomains" :key="item.id" class="rounded-xl border bg-secondary p-4">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <div class="break-all font-mono text-sm font-bold theme-text-primary">{{ item.domain }}</div>
+                  <div class="break-all font-mono text-sm font-bold text-foreground">{{ item.domain }}</div>
                   <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                    <span class="theme-badge px-2.5 py-1 font-semibold" :class="domainStatusClass(item.status)">
+                    <Badge :variant="domainStatusVariant(item.status)" size="sm">
                       {{ domainStatusLabel(item.status) }}
-                    </span>
-                    <span class="theme-badge px-2.5 py-1 font-semibold" :class="domainVerificationClass(item.verification_status)">
+                    </Badge>
+                    <Badge :variant="domainVerificationVariant(item.verification_status)" size="sm">
                       {{ domainVerificationLabel(item.verification_status) }}
-                    </span>
-                    <span class="theme-badge theme-badge-neutral px-2.5 py-1 font-semibold">
+                    </Badge>
+                    <Badge variant="neutral" size="sm">
                       {{ domainTypeLabel(item.type) }}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
-                <span v-if="item.is_primary" class="theme-badge theme-badge-accent px-2.5 py-1 text-xs font-semibold">
+                <Badge v-if="item.is_primary" variant="accent" size="sm">
                   {{ t('personalCenter.reseller.primaryDomain') }}
-                </span>
+                </Badge>
               </div>
-              <div v-if="item.verification_token" class="mt-4 rounded-lg border border-dashed px-3 py-2 text-xs theme-text-muted">
+              <div v-if="item.verification_token" class="mt-4 rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
                 <div>{{ t('personalCenter.reseller.verificationToken') }}</div>
-                <div class="mt-1 break-all font-mono theme-text-primary">{{ item.verification_token }}</div>
+                <div class="mt-1 break-all font-mono text-foreground">{{ item.verification_token }}</div>
               </div>
-              <div class="mt-4 text-xs theme-text-muted">
+              <div class="mt-4 text-xs text-muted-foreground">
                 {{ t('personalCenter.reseller.updatedAt') }} {{ formatDate(item.updated_at) }}
               </div>
             </div>
@@ -138,75 +134,71 @@
 
     <ResellerProductSettingsPanel v-if="management?.opened && management?.profile?.status === RESELLER_PROFILE_STATUS_ACTIVE" />
 
-    <div class="theme-personal-card">
+    <div class="rounded-2xl border bg-card p-7 shadow-sm">
       <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 class="text-xl font-bold theme-text-primary">{{ t('personalCenter.reseller.title') }}</h2>
-          <p class="mt-1 text-sm theme-text-muted">{{ t('personalCenter.reseller.subtitle') }}</p>
+          <h2 class="text-xl font-bold text-foreground">{{ t('personalCenter.reseller.title') }}</h2>
+          <p class="mt-1 text-sm text-muted-foreground">{{ t('personalCenter.reseller.subtitle') }}</p>
         </div>
-        <span class="theme-badge theme-badge-accent px-3 py-1 text-xs font-semibold">
+        <Badge variant="accent" size="sm">
           {{ t('personalCenter.tabs.reseller') }}
-        </span>
+        </Badge>
       </div>
 
       <div v-if="loading" class="space-y-3">
-        <div v-for="idx in 3" :key="idx" class="h-16 animate-pulse rounded-xl border theme-surface-muted"></div>
+        <div v-for="idx in 3" :key="idx" class="h-16 animate-pulse rounded-xl border bg-muted"></div>
       </div>
 
       <template v-else-if="dashboard?.opened">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.primaryAvailable') }}</div>
-            <div class="mt-2 text-lg font-bold theme-text-primary">{{ primaryBalanceText }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.primaryAvailable') }}</div>
+            <div class="mt-2 text-lg font-bold text-foreground">{{ primaryBalanceText }}</div>
           </div>
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.currencyCount') }}</div>
-            <div class="mt-2 text-lg font-bold theme-text-primary">{{ balances.length }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.currencyCount') }}</div>
+            <div class="mt-2 text-lg font-bold text-foreground">{{ balances.length }}</div>
           </div>
-          <div class="rounded-xl border theme-surface-soft p-4">
-            <div class="text-xs theme-text-muted">{{ t('personalCenter.reseller.settlementStatus') }}</div>
+          <div class="rounded-xl border bg-secondary p-4">
+            <div class="text-xs text-muted-foreground">{{ t('personalCenter.reseller.settlementStatus') }}</div>
             <div class="mt-2">
-              <span class="theme-badge px-2.5 py-1 text-xs font-semibold" :class="profileStatusClass">
+              <Badge :variant="profileStatusVariant" size="sm">
                 {{ profileStatusText }}
-              </span>
+              </Badge>
             </div>
           </div>
         </div>
 
         <div class="mt-5">
           <div class="mb-3 flex items-center justify-between gap-3">
-            <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.balanceTitle') }}</h3>
-            <button
-              type="button"
-              class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-              @click="initialize"
-            >
+            <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.balanceTitle') }}</h3>
+            <Button type="button" variant="secondary" size="sm" @click="initialize">
               {{ t('orders.filters.refresh') }}
-            </button>
+            </Button>
           </div>
-          <div v-if="balances.length === 0" class="rounded-xl border border-dashed theme-surface-soft px-4 py-6 text-sm theme-text-muted">
+          <div v-if="balances.length === 0" class="rounded-xl border border-dashed bg-secondary px-4 py-6 text-sm text-muted-foreground">
             {{ t('personalCenter.reseller.balanceEmpty') }}
           </div>
           <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div v-for="item in balances" :key="item.id" class="rounded-xl border theme-surface-soft p-4">
+            <div v-for="item in balances" :key="item.id" class="rounded-xl border bg-secondary p-4">
               <div class="flex items-start justify-between gap-3">
                 <div>
-                  <div class="font-mono text-sm font-bold theme-text-primary">{{ item.currency }}</div>
-                  <div class="mt-2 text-xs theme-text-muted">{{ t('personalCenter.reseller.availableAmount') }}</div>
-                  <div class="mt-1 font-mono text-base font-semibold theme-text-primary">{{ item.available_amount }}</div>
+                  <div class="font-mono text-sm font-bold text-foreground">{{ item.currency }}</div>
+                  <div class="mt-2 text-xs text-muted-foreground">{{ t('personalCenter.reseller.availableAmount') }}</div>
+                  <div class="mt-1 font-mono text-base font-semibold text-foreground">{{ item.available_amount }}</div>
                 </div>
-                <span class="theme-badge px-2.5 py-1 text-xs font-semibold" :class="balanceStatusClass(item.status)">
+                <Badge :variant="balanceStatusVariant(item.status)" size="sm">
                   {{ balanceStatusLabel(item.status) }}
-                </span>
+                </Badge>
               </div>
               <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <div class="theme-text-muted">{{ t('personalCenter.reseller.lockedAmount') }}</div>
-                  <div class="mt-1 font-mono theme-text-secondary">{{ item.locked_amount }}</div>
+                  <div class="text-muted-foreground">{{ t('personalCenter.reseller.lockedAmount') }}</div>
+                  <div class="mt-1 font-mono text-muted-foreground">{{ item.locked_amount }}</div>
                 </div>
                 <div>
-                  <div class="theme-text-muted">{{ t('personalCenter.reseller.negativeAmount') }}</div>
-                  <div class="mt-1 font-mono theme-text-secondary">{{ item.negative_amount }}</div>
+                  <div class="text-muted-foreground">{{ t('personalCenter.reseller.negativeAmount') }}</div>
+                  <div class="mt-1 font-mono text-muted-foreground">{{ item.negative_amount }}</div>
                 </div>
               </div>
             </div>
@@ -214,14 +206,14 @@
         </div>
       </template>
 
-      <div v-else class="rounded-xl border border-dashed theme-surface-soft p-5">
-        <p class="text-sm theme-text-muted">{{ t('personalCenter.reseller.notOpened') }}</p>
+      <div v-else class="rounded-xl border border-dashed bg-secondary p-5">
+        <p class="text-sm text-muted-foreground">{{ t('personalCenter.reseller.notOpened') }}</p>
       </div>
     </div>
 
-    <div v-if="dashboard?.opened" class="theme-personal-card">
-      <h3 class="text-lg font-bold theme-text-primary">{{ t('personalCenter.reseller.withdrawTitle') }}</h3>
-      <p class="mt-1 text-sm theme-text-muted">{{ t('personalCenter.reseller.withdrawSubtitle') }}</p>
+    <div v-if="dashboard?.opened" class="rounded-2xl border bg-card p-7 shadow-sm">
+      <h3 class="text-lg font-bold text-foreground">{{ t('personalCenter.reseller.withdrawTitle') }}</h3>
+      <p class="mt-1 text-sm text-muted-foreground">{{ t('personalCenter.reseller.withdrawSubtitle') }}</p>
       <div
         v-if="!withdrawEnabled"
         class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
@@ -230,198 +222,166 @@
       </div>
       <form class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-5" @submit.prevent="handleApplyWithdraw">
         <div>
-          <label class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.withdrawAmountLabel') }}</label>
-          <input
-            v-model.trim="withdrawForm.amount"
+          <label class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.withdrawAmountLabel') }}</label>
+          <Input
+            v-model="withdrawForm.amount"
             type="text"
             inputmode="decimal"
-            class="w-full form-input-lg"
+            class="h-11"
             :disabled="!withdrawEnabled || submittingWithdraw"
             :placeholder="t('personalCenter.reseller.withdrawAmountPlaceholder')"
           />
         </div>
         <div>
-          <label class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.withdrawCurrencyLabel') }}</label>
+          <label class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.withdrawCurrencyLabel') }}</label>
           <select
             v-if="balanceCurrencies.length > 0"
             v-model="withdrawForm.currency"
-            class="w-full form-input-lg"
+            :class="selectClass"
             :disabled="!withdrawEnabled || submittingWithdraw"
           >
             <option value="">{{ t('personalCenter.reseller.withdrawCurrencyPlaceholder') }}</option>
             <option v-for="currency in balanceCurrencies" :key="currency" :value="currency">{{ currency }}</option>
           </select>
-          <input
+          <Input
             v-else
-            v-model.trim="withdrawForm.currency"
+            v-model="withdrawForm.currency"
             type="text"
-            class="w-full form-input-lg"
+            class="h-11"
             :disabled="!withdrawEnabled || submittingWithdraw"
             :placeholder="t('personalCenter.reseller.withdrawCurrencyPlaceholder')"
           />
         </div>
         <div>
-          <label class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.withdrawChannelLabel') }}</label>
-          <input
-            v-model.trim="withdrawForm.channel"
+          <label class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.withdrawChannelLabel') }}</label>
+          <Input
+            v-model="withdrawForm.channel"
             type="text"
-            class="w-full form-input-lg"
+            class="h-11"
             :disabled="!withdrawEnabled || submittingWithdraw"
             :placeholder="t('personalCenter.reseller.withdrawChannelPlaceholder')"
           />
         </div>
         <div>
-          <label class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.withdrawAccountLabel') }}</label>
-          <input
-            v-model.trim="withdrawForm.account"
+          <label class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.withdrawAccountLabel') }}</label>
+          <Input
+            v-model="withdrawForm.account"
             type="text"
-            class="w-full form-input-lg"
+            class="h-11"
             :disabled="!withdrawEnabled || submittingWithdraw"
             :placeholder="t('personalCenter.reseller.withdrawAccountPlaceholder')"
           />
         </div>
         <div class="flex items-end">
-          <button
+          <Button
             type="submit"
             :disabled="submittingWithdraw || !withdrawEnabled"
-            class="inline-flex h-11 w-full items-center justify-center rounded-xl theme-btn-primary px-5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            class="h-11 w-full px-5 font-bold"
           >
             {{ submittingWithdraw ? t('personalCenter.reseller.withdrawing') : t('personalCenter.reseller.withdrawSubmit') }}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
 
-    <div v-if="dashboard?.opened" class="theme-personal-card">
+    <div v-if="dashboard?.opened" class="rounded-2xl border bg-card p-7 shadow-sm">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-lg font-bold theme-text-primary">{{ t('personalCenter.reseller.ledgerTitle') }}</h3>
-        <button
-          type="button"
-          class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-          @click="loadLedgerEntries(ledgerPagination.page)"
-        >
+        <h3 class="text-lg font-bold text-foreground">{{ t('personalCenter.reseller.ledgerTitle') }}</h3>
+        <Button type="button" variant="secondary" size="sm" @click="loadLedgerEntries(ledgerPagination.page)">
           {{ t('orders.filters.refresh') }}
-        </button>
+        </Button>
       </div>
 
       <div v-if="ledgerLoading" class="space-y-3">
-        <div v-for="idx in 3" :key="idx" class="h-14 animate-pulse rounded-xl border theme-surface-muted"></div>
+        <div v-for="idx in 3" :key="idx" class="h-14 animate-pulse rounded-xl border bg-muted"></div>
       </div>
-      <div v-else-if="ledgerEntries.length === 0" class="rounded-xl border border-dashed theme-surface-soft px-4 py-6 text-sm theme-text-muted">
+      <div v-else-if="ledgerEntries.length === 0" class="rounded-xl border border-dashed bg-secondary px-4 py-6 text-sm text-muted-foreground">
         {{ t('personalCenter.reseller.ledgerEmpty') }}
       </div>
-      <div v-else class="overflow-x-auto rounded-xl border border-gray-200/70 dark:border-white/10">
-        <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-white/10">
-          <thead class="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500 dark:bg-white/5 dark:text-gray-400">
-            <tr>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.ledgerTable.type') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.ledgerTable.amount') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.ledgerTable.status') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.ledgerTable.availableAt') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.ledgerTable.createdAt') }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-white/10">
-            <tr v-for="item in ledgerEntries" :key="item.id">
-              <td class="px-4 py-3 text-xs theme-text-secondary">{{ ledgerTypeLabel(item.type) }}</td>
-              <td class="px-4 py-3 font-mono text-xs theme-text-primary">{{ item.amount }} {{ item.currency }}</td>
-              <td class="px-4 py-3 text-xs">
-                <span class="theme-badge px-2.5 py-1 text-xs font-semibold" :class="ledgerStatusClass(item.status)">
+      <div v-else class="overflow-x-auto rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow class="bg-muted/50">
+              <TableHead class="px-4">{{ t('personalCenter.reseller.ledgerTable.type') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.ledgerTable.amount') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.ledgerTable.status') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.ledgerTable.availableAt') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.ledgerTable.createdAt') }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="item in ledgerEntries" :key="item.id">
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ ledgerTypeLabel(item.type) }}</TableCell>
+              <TableCell class="px-4 font-mono text-xs text-foreground">{{ item.amount }} {{ item.currency }}</TableCell>
+              <TableCell class="px-4">
+                <Badge :variant="ledgerStatusVariant(item.status)" size="sm">
                   {{ ledgerStatusLabel(item.status) }}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-xs theme-text-muted">{{ formatDate(item.available_at) }}</td>
-              <td class="px-4 py-3 text-xs theme-text-muted">{{ formatDate(item.created_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
+                </Badge>
+              </TableCell>
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ formatDate(item.available_at) }}</TableCell>
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
-      <div v-if="ledgerPagination.total_page > 1" class="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <button
-          :disabled="ledgerPagination.page <= 1"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="loadLedgerEntries(ledgerPagination.page - 1)"
-        >
-          {{ t('orders.prevPage') }}
-        </button>
-        <span class="rounded-full border theme-pill-neutral px-4 py-2 text-sm">
-          {{ t('orders.pageInfo', { page: ledgerPagination.page, total: ledgerPagination.total_page }) }}
-        </span>
-        <button
-          :disabled="ledgerPagination.page >= ledgerPagination.total_page"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="loadLedgerEntries(ledgerPagination.page + 1)"
-        >
-          {{ t('orders.nextPage') }}
-        </button>
-      </div>
+      <PaginationNav
+        :current-page="ledgerPagination.page"
+        :total-pages="ledgerPagination.total_page"
+        :loading="ledgerLoading"
+        :scroll-top="false"
+        @change-page="loadLedgerEntries"
+      />
     </div>
 
-    <div v-if="dashboard?.opened" class="theme-personal-card">
+    <div v-if="dashboard?.opened" class="rounded-2xl border bg-card p-7 shadow-sm">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-lg font-bold theme-text-primary">{{ t('personalCenter.reseller.withdrawRecordTitle') }}</h3>
-        <button
-          type="button"
-          class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-          @click="loadWithdraws(withdrawsPagination.page)"
-        >
+        <h3 class="text-lg font-bold text-foreground">{{ t('personalCenter.reseller.withdrawRecordTitle') }}</h3>
+        <Button type="button" variant="secondary" size="sm" @click="loadWithdraws(withdrawsPagination.page)">
           {{ t('orders.filters.refresh') }}
-        </button>
+        </Button>
       </div>
 
       <div v-if="withdrawsLoading" class="space-y-3">
-        <div v-for="idx in 3" :key="idx" class="h-14 animate-pulse rounded-xl border theme-surface-muted"></div>
+        <div v-for="idx in 3" :key="idx" class="h-14 animate-pulse rounded-xl border bg-muted"></div>
       </div>
-      <div v-else-if="withdraws.length === 0" class="rounded-xl border border-dashed theme-surface-soft px-4 py-6 text-sm theme-text-muted">
+      <div v-else-if="withdraws.length === 0" class="rounded-xl border border-dashed bg-secondary px-4 py-6 text-sm text-muted-foreground">
         {{ t('personalCenter.reseller.withdrawEmpty') }}
       </div>
-      <div v-else class="overflow-x-auto rounded-xl border border-gray-200/70 dark:border-white/10">
-        <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-white/10">
-          <thead class="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500 dark:bg-white/5 dark:text-gray-400">
-            <tr>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.withdrawTable.amount') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.withdrawTable.channel') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.withdrawTable.status') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.withdrawTable.createdAt') }}</th>
-              <th class="px-4 py-3 font-semibold">{{ t('personalCenter.reseller.withdrawTable.processedAt') }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-white/10">
-            <tr v-for="item in withdraws" :key="item.id">
-              <td class="px-4 py-3 font-mono text-xs theme-text-primary">{{ item.amount }} {{ item.currency }}</td>
-              <td class="px-4 py-3 text-xs theme-text-secondary">{{ item.channel }}</td>
-              <td class="px-4 py-3 text-xs">
-                <span class="theme-badge px-2.5 py-1 text-xs font-semibold" :class="withdrawStatusClass(item.status)">
+      <div v-else class="overflow-x-auto rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow class="bg-muted/50">
+              <TableHead class="px-4">{{ t('personalCenter.reseller.withdrawTable.amount') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.withdrawTable.channel') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.withdrawTable.status') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.withdrawTable.createdAt') }}</TableHead>
+              <TableHead class="px-4">{{ t('personalCenter.reseller.withdrawTable.processedAt') }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="item in withdraws" :key="item.id">
+              <TableCell class="px-4 font-mono text-xs text-foreground">{{ item.amount }} {{ item.currency }}</TableCell>
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ item.channel }}</TableCell>
+              <TableCell class="px-4">
+                <Badge :variant="withdrawStatusVariant(item.status)" size="sm">
                   {{ withdrawStatusLabel(item.status) }}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-xs theme-text-muted">{{ formatDate(item.created_at) }}</td>
-              <td class="px-4 py-3 text-xs theme-text-muted">{{ formatDate(item.processed_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
+                </Badge>
+              </TableCell>
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ formatDate(item.created_at) }}</TableCell>
+              <TableCell class="px-4 text-xs text-muted-foreground">{{ formatDate(item.processed_at) }}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
-      <div v-if="withdrawsPagination.total_page > 1" class="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <button
-          :disabled="withdrawsPagination.page <= 1"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="loadWithdraws(withdrawsPagination.page - 1)"
-        >
-          {{ t('orders.prevPage') }}
-        </button>
-        <span class="rounded-full border theme-pill-neutral px-4 py-2 text-sm">
-          {{ t('orders.pageInfo', { page: withdrawsPagination.page, total: withdrawsPagination.total_page }) }}
-        </span>
-        <button
-          :disabled="withdrawsPagination.page >= withdrawsPagination.total_page"
-          class="rounded-lg border theme-btn-secondary px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-          @click="loadWithdraws(withdrawsPagination.page + 1)"
-        >
-          {{ t('orders.nextPage') }}
-        </button>
-      </div>
+      <PaginationNav
+        :current-page="withdrawsPagination.page"
+        :total-pages="withdrawsPagination.total_page"
+        :loading="withdrawsLoading"
+        :scroll-top="false"
+        @change-page="loadWithdraws"
+      />
     </div>
   </div>
 </template>
@@ -463,7 +423,15 @@ import {
   RESELLER_WITHDRAW_STATUS_PENDING,
   RESELLER_WITHDRAW_STATUS_REJECTED,
 } from '../../constants/reseller'
-import { pageAlertClass, type PageAlert } from '../../utils/alerts'
+import { pageAlertVariant, pageAlertToneClass, type PageAlert } from '../../utils/alerts'
+import type { BadgeTone } from '../../utils/status'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import PaginationNav from '../../components/PaginationNav.vue'
 import ResellerSiteConfigPanel from '../../components/reseller/ResellerSiteConfigPanel.vue'
 import ResellerProductSettingsPanel from './ResellerProductSettingsPanel.vue'
 import {
@@ -479,6 +447,10 @@ import {
 } from '../../utils/resellerManagement'
 
 const { t } = useI18n()
+
+// 原生币种 select（含空值占位项）套用 Input 等价 token 样式
+const selectClass =
+  'h-11 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 const loading = ref(true)
 const managementLoading = ref(true)
@@ -554,17 +526,17 @@ const profileStatusText = computed(() => {
   return t(`personalCenter.reseller.${view.namespace}.${view.key}`)
 })
 
-const profileStatusClass = computed(() => profileStatusView.value.badgeClass)
+const profileStatusVariant = computed<BadgeTone>(() => profileStatusView.value.badgeTone)
 
 const managementStatusText = computed(() => t(`personalCenter.reseller.managementStatus.${managementState.value.statusKey}`))
 
-const managementStatusClass = computed(() => {
+const managementStatusVariant = computed<BadgeTone>(() => {
   const status = management.value?.profile?.status
-  if (status === RESELLER_PROFILE_STATUS_ACTIVE) return 'theme-badge-success'
-  if (status === RESELLER_PROFILE_STATUS_PENDING_REVIEW) return 'theme-badge-warning'
-  if (status === RESELLER_PROFILE_STATUS_REJECTED) return 'theme-badge-neutral'
-  if (status === RESELLER_PROFILE_STATUS_DISABLED) return 'theme-badge-neutral'
-  return managementState.value.canApply ? 'theme-badge-info' : 'theme-badge-neutral'
+  if (status === RESELLER_PROFILE_STATUS_ACTIVE) return 'success'
+  if (status === RESELLER_PROFILE_STATUS_PENDING_REVIEW) return 'warning'
+  if (status === RESELLER_PROFILE_STATUS_REJECTED) return 'neutral'
+  if (status === RESELLER_PROFILE_STATUS_DISABLED) return 'neutral'
+  return managementState.value.canApply ? 'info' : 'neutral'
 })
 
 const managementMarkupText = computed(() => {
@@ -807,12 +779,11 @@ const balanceStatusLabel = (status?: string) => {
   return status || '-'
 }
 
-const balanceStatusClass = (status?: string) => {
-  if (status === RESELLER_BALANCE_STATUS_NORMAL) return 'theme-badge-success'
-  if (status === RESELLER_BALANCE_STATUS_NEGATIVE_BALANCE) return 'theme-badge-warning'
-  if (status === RESELLER_BALANCE_STATUS_FROZEN_REVIEW) return 'theme-badge-warning'
-  if (status === RESELLER_BALANCE_STATUS_DISABLED) return 'theme-badge-neutral'
-  return 'theme-badge-neutral'
+const balanceStatusVariant = (status?: string): BadgeTone => {
+  if (status === RESELLER_BALANCE_STATUS_NORMAL) return 'success'
+  if (status === RESELLER_BALANCE_STATUS_NEGATIVE_BALANCE) return 'warning'
+  if (status === RESELLER_BALANCE_STATUS_FROZEN_REVIEW) return 'warning'
+  return 'neutral'
 }
 
 const domainTypeLabel = (type?: string) => {
@@ -826,11 +797,11 @@ const domainStatusLabel = (status?: string) => {
   return t(`personalCenter.reseller.domainStatus.${key}`)
 }
 
-const domainStatusClass = (status?: string) => {
-  if (status === RESELLER_DOMAIN_STATUS_ACTIVE) return 'theme-badge-success'
-  if (status === RESELLER_DOMAIN_STATUS_PENDING_REVIEW) return 'theme-badge-warning'
-  if (status === RESELLER_DOMAIN_STATUS_DISABLED) return 'theme-badge-neutral'
-  return 'theme-badge-neutral'
+const domainStatusVariant = (status?: string): BadgeTone => {
+  if (status === RESELLER_DOMAIN_STATUS_ACTIVE) return 'success'
+  if (status === RESELLER_DOMAIN_STATUS_PENDING_REVIEW) return 'warning'
+  if (status === RESELLER_DOMAIN_STATUS_DISABLED) return 'neutral'
+  return 'neutral'
 }
 
 const domainVerificationLabel = (status?: string) => {
@@ -840,10 +811,10 @@ const domainVerificationLabel = (status?: string) => {
   return status || '-'
 }
 
-const domainVerificationClass = (status?: string) => {
-  if (status === RESELLER_DOMAIN_VERIFICATION_VERIFIED) return 'theme-badge-success'
-  if (status === RESELLER_DOMAIN_VERIFICATION_FAILED) return 'theme-badge-neutral'
-  return 'theme-badge-warning'
+const domainVerificationVariant = (status?: string): BadgeTone => {
+  if (status === RESELLER_DOMAIN_VERIFICATION_VERIFIED) return 'success'
+  if (status === RESELLER_DOMAIN_VERIFICATION_FAILED) return 'neutral'
+  return 'warning'
 }
 
 const ledgerTypeLabel = (type?: string) => {
@@ -861,13 +832,11 @@ const ledgerStatusLabel = (status?: string) => {
   return status || '-'
 }
 
-const ledgerStatusClass = (status?: string) => {
-  if (status === RESELLER_LEDGER_STATUS_PENDING_CONFIRM) return 'theme-badge-warning'
-  if (status === RESELLER_LEDGER_STATUS_AVAILABLE) return 'theme-badge-success'
-  if (status === RESELLER_LEDGER_STATUS_LOCKED) return 'theme-badge-info'
-  if (status === RESELLER_LEDGER_STATUS_WITHDRAWN) return 'theme-badge-neutral'
-  if (status === RESELLER_LEDGER_STATUS_CANCELED) return 'theme-badge-neutral'
-  return 'theme-badge-neutral'
+const ledgerStatusVariant = (status?: string): BadgeTone => {
+  if (status === RESELLER_LEDGER_STATUS_PENDING_CONFIRM) return 'warning'
+  if (status === RESELLER_LEDGER_STATUS_AVAILABLE) return 'success'
+  if (status === RESELLER_LEDGER_STATUS_LOCKED) return 'info'
+  return 'neutral'
 }
 
 const withdrawStatusLabel = (status?: string) => {
@@ -877,11 +846,10 @@ const withdrawStatusLabel = (status?: string) => {
   return status || '-'
 }
 
-const withdrawStatusClass = (status?: string) => {
-  if (status === RESELLER_WITHDRAW_STATUS_PENDING) return 'theme-badge-warning'
-  if (status === RESELLER_WITHDRAW_STATUS_REJECTED) return 'theme-badge-neutral'
-  if (status === RESELLER_WITHDRAW_STATUS_PAID) return 'theme-badge-success'
-  return 'theme-badge-neutral'
+const withdrawStatusVariant = (status?: string): BadgeTone => {
+  if (status === RESELLER_WITHDRAW_STATUS_PENDING) return 'warning'
+  if (status === RESELLER_WITHDRAW_STATUS_PAID) return 'success'
+  return 'neutral'
 }
 
 onMounted(() => {

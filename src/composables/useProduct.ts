@@ -40,16 +40,16 @@ export function useProductLabels() {
     return fulfillmentType === 'auto' ? t('products.fulfillmentType.auto') : t('products.fulfillmentType.manual')
   }
 
-  const getStockBadgeClass = (status: string) => {
+  const getStockBadgeVariant = (status: string): 'info' | 'warning' | 'destructive' | 'success' => {
     switch (status) {
       case 'unlimited':
-        return 'theme-badge-info'
+        return 'info'
       case 'low_stock':
-        return 'theme-badge-warning'
+        return 'warning'
       case 'out_of_stock':
-        return 'theme-badge-danger'
+        return 'destructive'
       default:
-        return 'theme-badge-success'
+        return 'success'
     }
   }
 
@@ -163,7 +163,7 @@ export function useProductLabels() {
   return {
     getPurchaseTypeLabel,
     getFulfillmentTypeLabel,
-    getStockBadgeClass,
+    getStockBadgeVariant,
     getStockStatusLabel,
     isSoldOut,
     hasPromotionPrice,

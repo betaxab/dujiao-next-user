@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen theme-page pt-24 pb-16">
+  <div class="min-h-screen bg-background text-foreground pt-24 pb-16">
     <div class="container mx-auto px-4">
       <div class="mb-8">
-        <h1 class="mb-2 text-3xl font-black theme-text-primary">{{ t('checkout.title') }}</h1>
-        <p class="text-sm theme-text-secondary">{{ t('checkout.subtitle') }}</p>
+        <h1 class="mb-2 text-3xl font-black text-foreground">{{ t('checkout.title') }}</h1>
+        <p class="text-sm text-muted-foreground">{{ t('checkout.subtitle') }}</p>
       </div>
 
       <CheckoutSteps
@@ -22,19 +22,19 @@
 
       <div v-else class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
-          <div class="rounded-2xl border theme-panel p-6">
-            <h2 class="mb-4 text-lg font-bold theme-text-primary">{{ t('checkout.itemsTitle') }}</h2>
+          <div class="rounded-2xl border bg-card text-card-foreground p-6">
+            <h2 class="mb-4 text-lg font-bold text-foreground">{{ t('checkout.itemsTitle') }}</h2>
             <div class="space-y-4">
               <div
                 v-for="item in cartItems"
                 :key="cartItemKey(item)"
                 class="rounded-xl border p-4"
                 :class="itemStockExceeded(item)
-                  ? 'border-amber-200 bg-amber-50/60 dark:border-amber-700 dark:bg-amber-950/20'
-                  : 'border-gray-100 bg-gray-50 dark:border-white/10 dark:bg-black/20'"
+                  ? 'border-warning/40 bg-warning/10'
+                  : 'bg-secondary'"
               >
                 <div class="flex min-w-0 items-start gap-3">
-                  <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-white/10 dark:bg-black/30 sm:h-20 sm:w-20">
+                  <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border bg-muted transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm sm:h-20 sm:w-20">
                     <SmartImage
                       :src="checkoutItemImage(item)"
                       :alt="getLocalizedText(item.title)"
@@ -44,25 +44,25 @@
                   <div class="min-w-0">
                     <router-link
                       :to="`/products/${item.slug}`"
-                      class="line-clamp-2 font-semibold theme-link"
+                      class="line-clamp-2 font-semibold text-primary hover:underline"
                     >
                       {{ getLocalizedText(item.title) }}
                     </router-link>
-                    <div class="mt-1 text-xs theme-text-muted">{{ t('checkout.quantityLabel') }}：{{ item.quantity }}</div>
-                    <div v-if="itemSkuDisplay(item)" class="mt-1 text-xs theme-text-muted">{{ t('checkout.skuLabel') }}：{{ itemSkuDisplay(item) }}</div>
+                    <div class="mt-1 text-xs text-muted-foreground">{{ t('checkout.quantityLabel') }}：{{ item.quantity }}</div>
+                    <div v-if="itemSkuDisplay(item)" class="mt-1 text-xs text-muted-foreground">{{ t('checkout.skuLabel') }}：{{ itemSkuDisplay(item) }}</div>
                     <div
                       v-if="itemStockHint(item)"
                       class="mt-1 text-xs"
                       :class="itemStockExceeded(item)
-                        ? 'text-amber-600 dark:text-amber-300'
-                        : 'theme-text-muted'"
+                        ? 'text-warning'
+                        : 'text-muted-foreground'"
                     >
                       {{ itemStockHint(item) }}
                     </div>
                     <div class="mt-2 flex flex-wrap items-baseline gap-3">
                       <span
                         class="inline-flex items-baseline whitespace-nowrap"
-                        :class="checkoutItemHasPriceDiscount(item) ? 'text-rose-600 dark:text-rose-300' : 'theme-text-primary'"
+                        :class="checkoutItemHasPriceDiscount(item) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
                       >
                         <span class="text-xl font-black leading-none">{{ checkoutItemPriceParts(item).integer }}</span>
                         <span class="text-xs font-semibold">{{ checkoutItemPriceParts(item).decimal }}</span>
@@ -73,7 +73,7 @@
                       </span>
                       <span
                         v-if="checkoutItemHasPriceDiscount(item)"
-                        class="inline-flex items-baseline whitespace-nowrap text-xs text-gray-400 dark:text-gray-500"
+                        class="inline-flex items-baseline whitespace-nowrap text-xs text-muted-foreground line-through"
                       >
                         <span>{{ checkoutItemOriginalPriceParts(item).integer }}</span>
                         <span>{{ checkoutItemOriginalPriceParts(item).decimal }}</span>
@@ -95,56 +95,52 @@
             :manual-field-error="manualFieldError"
           />
 
-          <div class="rounded-2xl border theme-panel p-6">
-            <h2 class="mb-4 text-lg font-bold theme-text-primary">{{ t('checkout.couponTitle') }}</h2>
-            <input
+          <div class="rounded-2xl border bg-card text-card-foreground p-6">
+            <h2 class="mb-4 text-lg font-bold text-foreground">{{ t('checkout.couponTitle') }}</h2>
+            <Input
               v-model="couponCode"
               type="text"
-              class="w-full form-input-lg"
+              class="h-11"
               :placeholder="t('checkout.couponPlaceholder')"
             />
           </div>
 
           <div
             v-if="!userAuthStore.isAuthenticated"
-            class="space-y-4 rounded-2xl border theme-panel p-6"
+            class="space-y-4 rounded-2xl border bg-card text-card-foreground p-6"
           >
-            <h2 class="text-lg font-bold theme-text-primary">{{ t('checkout.modeTitle') }}</h2>
+            <h2 class="text-lg font-bold text-foreground">{{ t('checkout.modeTitle') }}</h2>
             <div class="flex flex-wrap gap-3">
-              <button
+              <Button
+                :variant="checkoutMode === 'guest' ? 'default' : 'secondary'"
                 @click="checkoutMode = 'guest'"
-                class="theme-btn-inline-md"
-                :class="checkoutMode === 'guest'
-                  ? 'theme-btn-primary border border-transparent'
-                  : 'border theme-btn-secondary'"
               >
                 {{ t('checkout.guestPurchase') }}
-              </button>
-              <router-link
-                to="/auth/login"
-                class="theme-btn-inline-md border theme-btn-secondary"
-              >
-                {{ t('checkout.memberPurchase') }}
-              </router-link>
+              </Button>
+              <Button as-child variant="secondary">
+                <router-link to="/auth/login">
+                  {{ t('checkout.memberPurchase') }}
+                </router-link>
+              </Button>
             </div>
 
             <div v-if="checkoutMode === 'guest'" class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <input
+              <Input
                 v-model="guestEmail"
                 type="email"
-                class="w-full form-input-lg"
+                class="h-11"
                 :placeholder="t('checkout.guestEmailPlaceholder')"
               />
-              <input
+              <Input
                 v-model="guestPassword"
                 type="password"
-                class="w-full form-input-lg"
+                class="h-11"
                 :placeholder="t('checkout.guestPasswordPlaceholder')"
               />
             </div>
 
             <div v-if="checkoutMode === 'guest' && guestCaptchaEnabled" class="space-y-2">
-              <p class="text-xs font-semibold uppercase tracking-[0.14em] theme-text-muted">{{ t('auth.common.captchaLabel') }}</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{{ t('auth.common.captchaLabel') }}</p>
               <ImageCaptcha
                 v-if="captchaProvider === 'image'"
                 ref="guestImageCaptchaRef"
@@ -160,39 +156,39 @@
               />
             </div>
 
-            <div v-if="checkoutMode === 'guest'" class="mb-3 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-900">
+            <div v-if="checkoutMode === 'guest'" class="mb-3 rounded-xl border border-success/40 bg-success/10 p-3 text-sm text-success">
               <p class="font-semibold">{{ t('checkout.guestInstructions.title') }}</p>
               <ul class="mt-2 space-y-1 list-disc pl-5">
                 <li>{{ t('checkout.guestInstructions.email') }}</li>
                 <li>{{ t('checkout.guestInstructions.password') }}</li>
               </ul>
             </div>
-            <p v-if="checkoutMode === 'guest' && guestEmail && !guestEmailValid" class="text-xs text-red-500">
+            <p v-if="checkoutMode === 'guest' && guestEmail && !guestEmailValid" class="text-xs text-destructive">
               {{ t('error.email_invalid') }}
             </p>
           </div>
         </div>
 
-        <div class="h-fit rounded-2xl border theme-panel p-6 lg:sticky lg:top-24">
-          <h2 class="mb-4 text-lg font-bold theme-text-primary">{{ t('checkout.submitTitle') }}</h2>
-          <div class="mb-4 rounded-lg border theme-surface-soft p-3 text-xs theme-text-muted">
+        <div class="h-fit rounded-2xl border bg-card text-card-foreground p-6 lg:sticky lg:top-24">
+          <h2 class="mb-4 text-lg font-bold text-foreground">{{ t('checkout.submitTitle') }}</h2>
+          <div class="mb-4 rounded-lg border bg-secondary p-3 text-xs text-muted-foreground">
             {{ t('checkout.submitHint') }}
           </div>
 
-          <div class="mb-4 space-y-3 text-sm theme-text-muted">
+          <div class="mb-4 space-y-3 text-sm text-muted-foreground">
             <div class="flex items-center justify-between">
               <span>{{ t('cart.itemsCount') }}</span>
-              <span class="font-mono theme-text-primary">{{ totalItems }}</span>
+              <span class="font-mono text-foreground">{{ totalItems }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span>{{ t('checkout.previewOriginal') }}</span>
-              <span class="font-mono theme-text-primary">{{ formatPrice(previewOriginal, previewCurrency) }}</span>
+              <span class="font-mono text-foreground">{{ formatPrice(previewOriginal, previewCurrency) }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span>{{ t('checkout.previewCoupon') }}</span>
               <span
                 class="font-mono"
-                :class="hasPositiveAmount(previewCoupon) ? 'text-rose-600 dark:text-rose-300' : 'theme-text-primary'"
+                :class="hasPositiveAmount(previewCoupon) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
               >
                 {{ formatDiscountPrice(previewCoupon, previewCurrency) }}
               </span>
@@ -201,7 +197,7 @@
               <span>{{ t('checkout.previewPromotion') }}</span>
               <span
                 class="font-mono"
-                :class="hasPositiveAmount(previewPromotion) ? 'text-rose-600 dark:text-rose-300' : 'theme-text-primary'"
+                :class="hasPositiveAmount(previewPromotion) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
               >
                 {{ formatDiscountPrice(previewPromotion, previewCurrency) }}
               </span>
@@ -210,7 +206,7 @@
               <span>{{ t('checkout.previewWholesale') }}</span>
               <span
                 class="font-mono"
-                :class="hasPositiveAmount(previewWholesale) ? 'text-emerald-600 dark:text-emerald-300' : 'theme-text-primary'"
+                :class="hasPositiveAmount(previewWholesale) ? 'text-emerald-600 dark:text-emerald-300' : 'text-foreground'"
               >
                 {{ formatDiscountPrice(previewWholesale, previewCurrency) }}
               </span>
@@ -219,48 +215,48 @@
               <span>{{ t('checkout.previewMemberDiscount') }}</span>
               <span class="font-mono text-amber-600 dark:text-amber-300">-{{ formatPrice(previewMemberDiscount, previewCurrency) }}</span>
             </div>
-            <div class="flex items-center justify-between border-t theme-border pt-3 theme-text-primary">
+            <div class="flex items-center justify-between border-t pt-3 text-foreground">
               <span class="font-semibold">{{ t('checkout.previewTotal') }}</span>
               <span class="font-mono text-lg font-bold">{{ formatPrice(previewTotal, previewCurrency) }}</span>
             </div>
           </div>
 
-          <div v-if="previewLoading || couponRefreshing" class="mb-3 text-xs theme-text-muted">
+          <div v-if="previewLoading || couponRefreshing" class="mb-3 text-xs text-muted-foreground">
             {{ previewStatusText }}
           </div>
-          <div
+          <Alert
             v-if="checkoutAlert"
-            class="mb-4 rounded-lg border p-3 text-sm"
-            :class="pageAlertClass(checkoutAlert.level)"
+            :variant="pageAlertVariant(checkoutAlert.level)"
+            :class="['mb-4', pageAlertToneClass(checkoutAlert.level)]"
           >
-            {{ checkoutAlert.message }}
-          </div>
+            <AlertDescription>{{ checkoutAlert.message }}</AlertDescription>
+          </Alert>
 
           <!-- Payment Channel Selection -->
-          <div class="mb-4 border-t theme-border pt-4">
-            <h3 class="mb-3 text-sm font-bold theme-text-primary">{{ t('checkout.paymentMethod') }}</h3>
+          <div class="mb-4 border-t pt-4">
+            <h3 class="mb-3 text-sm font-bold text-foreground">{{ t('checkout.paymentMethod') }}</h3>
 
             <!-- Wallet Balance -->
-            <div v-if="showBalanceOption" class="mb-3 rounded-lg border theme-surface-soft p-3">
+            <div v-if="showBalanceOption" class="mb-3 rounded-lg border bg-secondary p-3">
               <div class="flex items-center justify-between">
                 <div>
-                  <div class="text-xs theme-text-muted">{{ t('payment.walletBalanceLabel') }}</div>
-                  <div class="mt-0.5 text-sm font-semibold theme-text-primary">
+                  <div class="text-xs text-muted-foreground">{{ t('payment.walletBalanceLabel') }}</div>
+                  <div class="mt-0.5 text-sm font-semibold text-foreground">
                     {{ walletLoading ? t('common.loading') : formatPrice(walletBalance, previewCurrency) }}
                   </div>
                 </div>
-                <label class="inline-flex items-center gap-2 text-xs theme-text-secondary">
+                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground">
                   <input v-model="useBalance" type="checkbox" class="h-4 w-4 accent-primary" :disabled="walletOnlyPayment" />
                   <span>{{ t('payment.useBalance') }}</span>
                 </label>
               </div>
-              <div v-if="walletOnlyPayment" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+              <div v-if="walletOnlyPayment" class="mt-2 text-xs text-warning">
                 {{ t('payment.walletOnlyHint') }}
               </div>
-              <div v-if="useBalance" class="mt-2 space-y-1 text-xs theme-text-muted">
+              <div v-if="useBalance" class="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div>{{ t('payment.walletDeductLabel') }}：{{ expectedWalletPaidDisplay }}</div>
                 <div v-if="!walletOnlyPayment">{{ t('payment.onlinePayLabel') }}：{{ expectedOnlinePayDisplay }}</div>
-                <div v-if="walletOnlyPayment && expectedOnlinePayCents > 0" class="text-amber-600 dark:text-amber-400">
+                <div v-if="walletOnlyPayment && expectedOnlinePayCents > 0" class="text-warning">
                   {{ t('payment.walletInsufficientHint') }}
                 </div>
               </div>
@@ -275,36 +271,37 @@
                   :title="isChannelDisabledForAmount(channel) ? channelAmountLimitHint(channel) : ''"
                   @click="handleSelectChannel(channel)"
                   class="text-left border rounded-lg p-2.5 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                  :class="selectedChannelId === channel.id && !isChannelDisabledForAmount(channel) ? 'theme-selected-surface' : 'theme-interactive-surface'">
+                  :class="selectedChannelId === channel.id && !isChannelDisabledForAmount(channel) ? 'border-primary/45 bg-primary/10' : 'bg-card hover:border-foreground/25'">
                   <div class="flex items-center gap-2">
                     <img v-if="channel.icon" :src="getImageUrl(channel.icon)" loading="lazy" class="h-5 w-5 rounded object-contain shrink-0" />
-                    <div class="text-sm theme-text-primary font-medium truncate">{{ channel.name }}</div>
+                    <div class="text-sm text-foreground font-medium truncate">{{ channel.name }}</div>
                   </div>
-                  <div class="mt-1 space-y-0.5 text-xs theme-text-muted">
+                  <div class="mt-1 space-y-0.5 text-xs text-muted-foreground">
                     <div>{{ t('payment.feeLabel') }}：{{ formatChannelFeeRate(channel) }}</div>
                     <div>{{ t('payment.fixedFeeLabel') }}：{{ formatChannelFixedFee(channel) }}</div>
                   </div>
-                  <div v-if="isChannelDisabledForAmount(channel)" class="mt-1 text-xs text-amber-600">
+                  <div v-if="isChannelDisabledForAmount(channel)" class="mt-1 text-xs text-warning">
                     {{ channelAmountLimitHint(channel) }}
                   </div>
                 </button>
               </div>
-              <div v-else-if="requiresOnlineChannel && paymentChannels.length === 0" class="text-xs theme-text-muted">
+              <div v-else-if="requiresOnlineChannel && paymentChannels.length === 0" class="text-xs text-muted-foreground">
                 {{ t('checkout.noPaymentChannels') }}
               </div>
             </template>
-            <div v-if="!requiresOnlineChannel" class="text-xs text-emerald-600 dark:text-emerald-400">
+            <div v-if="!requiresOnlineChannel" class="text-xs text-success">
               {{ t('checkout.walletCoversAll') }}
             </div>
           </div>
 
-          <button
-            @click="handleSubmit"
+          <Button
+            size="lg"
+            class="w-full font-semibold"
             :disabled="!canSubmit"
-            class="theme-btn-block-md theme-btn-primary font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            @click="handleSubmit"
           >
             {{ submitting ? t('checkout.submitting') : t('checkout.submitButton') }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -321,7 +318,7 @@ import { useAppStore } from '../stores/app'
 import { useUserAuthStore } from '../stores/userAuth'
 import { guestOrderAPI, userOrderAPI, walletAPI, type CaptchaPayload } from '../api'
 import { debounceAsync } from '../utils/debounce'
-import { pageAlertClass, type PageAlert } from '../utils/alerts'
+import { pageAlertVariant, pageAlertToneClass, type PageAlert } from '../utils/alerts'
 import { amountToCents, basisPointsToPercent, centsToAmount, parseInteger, rateToBasisPoints } from '../utils/money'
 import { buildSkuDisplayText, normalizeSkuId } from '../utils/sku'
 import { refreshCartStockSnapshots, cartItemPurchaseLimit as itemPurchaseLimit, cartItemPurchaseMin as itemPurchaseMin } from '../utils/cartStock'
@@ -333,6 +330,9 @@ import CheckoutManualForm from '../components/checkout/CheckoutManualForm.vue'
 import EmptyState from '../components/EmptyState.vue'
 import SmartImage from '../components/SmartImage.vue'
 import CheckoutSteps from '../components/checkout/CheckoutSteps.vue'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useLocalized, useProductLabels } from '../composables/useProduct'
 
 const router = useRouter()

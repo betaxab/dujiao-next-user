@@ -2,6 +2,8 @@ import { userApi } from './client'
 import type {
     ResellerApplyPayload,
     ResellerCustomDomainPayload,
+    ResellerOrderListParams,
+    ResellerOrderStatsParams,
     ResellerProductSettingUpdatePayload,
     ResellerSiteConfigPayload,
     ResellerWithdrawApplyPayload,
@@ -21,6 +23,9 @@ export const resellerAPI = {
     resetProductSetting: (productId: number, skuId = 0) =>
         userApi.delete(`/reseller/product-settings/${productId}`, { params: { sku_id: skuId } }),
     dashboard: () => userApi.get('/reseller/dashboard'),
+    orders: (params?: ResellerOrderListParams) => userApi.get('/reseller/orders', { params }),
+    orderStats: (params?: ResellerOrderStatsParams) => userApi.get('/reseller/orders/stats', { params }),
+    orderDetail: (orderNo: string) => userApi.get(`/reseller/orders/${encodeURIComponent(orderNo)}`),
     balanceAccounts: (params?: any) => userApi.get('/reseller/balance-accounts', { params }),
     ledgerEntries: (params?: any) => userApi.get('/reseller/ledger-entries', { params }),
     withdraws: (params?: any) => userApi.get('/reseller/withdraws', { params }),

@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-[50vh] flex items-center justify-center px-6 py-12 text-center">
-    <div v-if="loading" class="text-sm theme-text-muted">{{ t('auth.telegramCallback.processing') }}</div>
+    <div v-if="loading" class="text-sm text-muted-foreground">{{ t('auth.telegramCallback.processing') }}</div>
     <div v-else-if="errMsg" class="space-y-3">
       <p class="text-sm text-red-500">{{ errMsg }}</p>
-      <RouterLink to="/auth/login" class="text-sm underline theme-link-muted">{{ t('auth.telegramCallback.backToLogin') }}</RouterLink>
+      <RouterLink to="/auth/login" class="text-sm underline text-muted-foreground transition-colors hover:text-foreground">{{ t('auth.telegramCallback.backToLogin') }}</RouterLink>
     </div>
   </div>
 </template>

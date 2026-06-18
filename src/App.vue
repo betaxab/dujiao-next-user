@@ -1,7 +1,7 @@
 <template>
-  <div id="app" class="min-h-screen theme-page flex flex-col">
-    <Navbar />
-    <main class="flex-1 pb-14 lg:pb-0">
+  <div id="app" class="min-h-screen bg-background text-foreground flex flex-col">
+    <Navbar v-if="!isResellerConsole" />
+    <main class="flex-1" :class="isResellerConsole ? '' : 'pb-14 lg:pb-0'">
       <ErrorBoundary>
         <RouterView v-slot="{ Component }">
           <Transition name="page-fade" mode="out-in">
@@ -10,16 +10,18 @@
         </RouterView>
       </ErrorBoundary>
     </main>
-    <Footer />
+    <Footer v-if="!isResellerConsole" />
     <Loading :loading="appStore.loading" />
     <Toast />
     <ConfirmDialog />
-    <BackToTop />
-    <MobileBottomNav />
+    <BackToTop v-if="!isResellerConsole" />
+    <MobileBottomNav v-if="!isResellerConsole" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAppStore } from './stores/app'
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
@@ -32,6 +34,8 @@ import MobileBottomNav from './components/MobileBottomNav.vue'
 
 // config 由 router.beforeEach 统一加载，无需在此重复调用
 const appStore = useAppStore()
+const route = useRoute()
+const isResellerConsole = computed(() => route.meta.resellerConsole === true)
 </script>
 
 <style>

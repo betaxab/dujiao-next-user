@@ -384,6 +384,59 @@ export interface ResellerDashboardData {
     withdraw_disabled_reason?: string
 }
 
+export interface ResellerOrderListParams {
+    page?: number
+    page_size?: number
+    status?: string
+    order_no?: string
+    domain?: string
+    currency?: string
+    created_from?: string
+    created_to?: string
+    paid_from?: string
+    paid_to?: string
+}
+
+export type ResellerOrderStatsParams = ResellerOrderListParams
+
+export interface ResellerOrderData {
+    order_no: string
+    status: string
+    currency: string
+    total_amount: string
+    base_amount: string
+    profit_amount: string
+    profit_status: 'credited' | 'pending' | 'unavailable' | string
+    domain: string
+    buyer_label: string
+    items_count: number
+    created_at: string
+    paid_at?: string | null
+}
+
+export interface ResellerOrderItemData {
+    title: Record<string, string>
+    sku_snapshot: Record<string, string>
+    quantity: number
+    unit_price: string
+    total_price: string
+    base_unit_amount?: string
+    reseller_unit_amount?: string
+    base_total_amount?: string
+    reseller_total_amount?: string
+    profit_amount?: string
+}
+
+export interface ResellerOrderDetailData extends ResellerOrderData {
+    items: ResellerOrderItemData[]
+}
+
+export interface ResellerOrderStatsData {
+    total: number
+    by_status: Record<string, number>
+    by_currency: Record<string, number>
+}
+
 export interface ResellerWithdrawApplyPayload {
     amount: string
     currency: string

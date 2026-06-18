@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
@@ -14,6 +15,11 @@ const cfAsyncModuleScriptPlugin = () => ({
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [vue(), cfAsyncModuleScriptPlugin()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   esbuild: mode === 'production' ? { drop: ['console', 'debugger'] } : {},
   build: {
     rollupOptions: {

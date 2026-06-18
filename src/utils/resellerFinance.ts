@@ -1,3 +1,5 @@
+import type { BadgeTone } from './status'
+
 type ResellerWithdrawState = {
   withdraw_enabled?: boolean
 }
@@ -12,7 +14,7 @@ type ResellerFinanceStatusNamespace = 'profileStatusMap' | 'settlementStatusMap'
 export type ResellerFinanceStatusView = {
   namespace: ResellerFinanceStatusNamespace
   key: string
-  badgeClass: string
+  badgeTone: BadgeTone
 }
 
 const PROFILE_STATUS_ACTIVE = 'active'
@@ -57,7 +59,7 @@ export const getResellerFinanceStatusView = (profile?: ResellerFinanceProfile | 
     return {
       namespace: 'profileStatusMap',
       key: 'unknown',
-      badgeClass: 'theme-badge-neutral',
+      badgeTone: 'neutral',
     }
   }
 
@@ -66,7 +68,7 @@ export const getResellerFinanceStatusView = (profile?: ResellerFinanceProfile | 
     return {
       namespace: 'profileStatusMap',
       key: profileStatusKeyMap[profileStatus] || profileStatus,
-      badgeClass: profileStatus === PROFILE_STATUS_PENDING_REVIEW ? 'theme-badge-warning' : 'theme-badge-neutral',
+      badgeTone: profileStatus === PROFILE_STATUS_PENDING_REVIEW ? 'warning' : 'neutral',
     }
   }
 
@@ -74,7 +76,7 @@ export const getResellerFinanceStatusView = (profile?: ResellerFinanceProfile | 
   return {
     namespace: 'settlementStatusMap',
     key: settlementStatusKeyMap[settlementStatus] || settlementStatus || 'unknown',
-    badgeClass: settlementStatus === 'normal' ? 'theme-badge-success' : 'theme-badge-warning',
+    badgeTone: settlementStatus === 'normal' ? 'success' : 'warning',
   }
 }
 

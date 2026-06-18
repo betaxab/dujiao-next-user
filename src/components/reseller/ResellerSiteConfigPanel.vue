@@ -1,174 +1,175 @@
 <template>
-  <div class="theme-personal-card">
-    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h2 class="text-xl font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.title') }}</h2>
-        <p class="mt-1 text-sm theme-text-muted">{{ t('personalCenter.reseller.siteConfig.subtitle') }}</p>
+  <Card :class="embedded ? 'p-5 sm:p-6' : 'p-6 sm:p-7'">
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center" :class="embedded ? 'md:justify-end' : 'md:justify-between'">
+      <div v-if="!embedded">
+        <h2 class="text-xl font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.title') }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.subtitle') }}</p>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold"
-        :disabled="loading"
-        @click="loadConfig"
-      >
+      <Button type="button" variant="outline" size="sm" :disabled="loading" @click="loadConfig">
         {{ t('orders.filters.refresh') }}
-      </button>
+      </Button>
     </div>
 
-    <div v-if="alert" class="mb-5 rounded-xl border px-4 py-3 text-sm shadow-sm" :class="pageAlertClass(alert.level)">
-      {{ alert.message }}
-    </div>
+    <Alert
+      v-if="alert"
+      class="mb-5"
+      :variant="alert.level === 'error' ? 'destructive' : 'default'"
+      :class="alert.level === 'success' ? 'border-success/40 text-success' : ''"
+    >
+      <AlertDescription>{{ alert.message }}</AlertDescription>
+    </Alert>
 
     <div v-if="loading" class="space-y-3">
-      <div v-for="idx in 4" :key="idx" class="h-14 animate-pulse rounded-xl border theme-surface-muted"></div>
+      <div v-for="idx in 4" :key="idx" class="h-14 animate-pulse rounded-xl border bg-muted"></div>
     </div>
 
-    <div v-else-if="!canEdit" class="rounded-xl border border-dashed theme-surface-soft px-4 py-6 text-sm theme-text-muted">
+    <div v-else-if="!canEdit" class="rounded-xl border border-dashed px-4 py-6 text-sm text-muted-foreground">
       {{ t('personalCenter.reseller.siteConfig.inactive') }}
     </div>
 
     <form v-else class="space-y-6" @submit.prevent="handleSave">
       <section class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.siteName') }}</span>
-          <input v-model.trim="form.site_name" type="text" class="w-full form-input-lg" maxlength="120" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.siteName') }}</span>
+          <Input v-model.trim="form.site_name" type="text" maxlength="120" />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.logo') }}</span>
-          <input v-model.trim="form.logo" type="text" class="w-full form-input-lg" placeholder="/uploads/reseller/logo.png" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.logo') }}</span>
+          <Input v-model.trim="form.logo" type="text" placeholder="/uploads/reseller/logo.png" />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.favicon') }}</span>
-          <input v-model.trim="form.favicon" type="text" class="w-full form-input-lg" placeholder="/uploads/reseller/favicon.png" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.favicon') }}</span>
+          <Input v-model.trim="form.favicon" type="text" placeholder="/uploads/reseller/favicon.png" />
         </label>
       </section>
 
       <section class="grid grid-cols-1 gap-4 md:grid-cols-4">
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.telegram') }}</span>
-          <input v-model.trim="form.support!.telegram" type="text" class="w-full form-input-lg" placeholder="https://t.me/example" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.telegram') }}</span>
+          <Input v-model.trim="form.support!.telegram" type="text" placeholder="https://t.me/example" />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.whatsapp') }}</span>
-          <input v-model.trim="form.support!.whatsapp" type="text" class="w-full form-input-lg" placeholder="https://wa.me/1234567890" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.whatsapp') }}</span>
+          <Input v-model.trim="form.support!.whatsapp" type="text" placeholder="https://wa.me/1234567890" />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.email') }}</span>
-          <input v-model.trim="form.support!.email" type="text" class="w-full form-input-lg" placeholder="support@example.com" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.email') }}</span>
+          <Input v-model.trim="form.support!.email" type="text" placeholder="support@example.com" />
         </label>
         <label class="block">
-          <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.supportUrl') }}</span>
-          <input v-model.trim="form.support!.support_url" type="text" class="w-full form-input-lg" placeholder="https://example.com/support" />
+          <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.supportUrl') }}</span>
+          <Input v-model.trim="form.support!.support_url" type="text" placeholder="https://example.com/support" />
         </label>
       </section>
 
-      <section class="rounded-xl border theme-surface-soft p-4">
+      <section class="rounded-xl border bg-muted/30 p-4">
         <div class="mb-4 flex items-center justify-between gap-3">
-          <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.sections.seo') }}</h3>
+          <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.sections.seo') }}</h3>
         </div>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
           <label v-for="locale in resellerLocales" :key="`seo-title-${locale}`" class="block">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.seoTitle') }} {{ locale }}</span>
-            <input v-model.trim="form.seo!.title[locale]" type="text" class="w-full form-input-lg" />
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.seoTitle') }} {{ locale }}</span>
+            <Input v-model.trim="form.seo!.title[locale]" type="text" />
           </label>
           <label v-for="locale in resellerLocales" :key="`seo-desc-${locale}`" class="block">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.seoDescription') }} {{ locale }}</span>
-            <textarea v-model.trim="form.seo!.description[locale]" rows="2" class="w-full form-input-lg"></textarea>
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.seoDescription') }} {{ locale }}</span>
+            <Textarea v-model.trim="form.seo!.description[locale]" rows="2" />
           </label>
           <label class="block md:col-span-3">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.ogImage') }}</span>
-            <input v-model.trim="form.seo!.default_og_image" type="text" class="w-full form-input-lg" placeholder="/uploads/reseller/og.png" />
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.ogImage') }}</span>
+            <Input v-model.trim="form.seo!.default_og_image" type="text" placeholder="/uploads/reseller/og.png" />
           </label>
         </div>
       </section>
 
-      <section class="rounded-xl border theme-surface-soft p-4">
+      <section class="rounded-xl border bg-muted/30 p-4">
         <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.sections.announcement') }}</h3>
-          <label class="inline-flex items-center gap-2 text-sm theme-text-secondary">
-            <input v-model="form.announcement!.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
+          <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.sections.announcement') }}</h3>
+          <label class="inline-flex items-center gap-2 text-sm text-foreground">
+            <Switch v-model="form.announcement!.enabled" />
             {{ t('personalCenter.reseller.siteConfig.fields.announcementEnabled') }}
           </label>
         </div>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <label class="block">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.announcementType') }}</span>
-            <select v-model="form.announcement!.type" class="w-full form-input-lg">
-              <option value="info">info</option>
-              <option value="success">success</option>
-              <option value="warning">warning</option>
-            </select>
-          </label>
+          <div class="block">
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.announcementType') }}</span>
+            <Select v-model="form.announcement!.type">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="info">info</SelectItem>
+                <SelectItem value="success">success</SelectItem>
+                <SelectItem value="warning">warning</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <label v-for="locale in resellerLocales" :key="`ann-title-${locale}`" class="block">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.announcementTitle') }} {{ locale }}</span>
-            <input v-model.trim="form.announcement!.title[locale]" type="text" class="w-full form-input-lg" />
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.announcementTitle') }} {{ locale }}</span>
+            <Input v-model.trim="form.announcement!.title[locale]" type="text" />
           </label>
           <label v-for="locale in resellerLocales" :key="`ann-content-${locale}`" class="block md:col-span-1">
-            <span class="mb-2 block text-sm font-medium theme-text-secondary">{{ t('personalCenter.reseller.siteConfig.fields.announcementContent') }} {{ locale }}</span>
-            <textarea v-model.trim="form.announcement!.content[locale]" rows="2" class="w-full form-input-lg"></textarea>
+            <span class="mb-2 block text-sm font-medium text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.announcementContent') }} {{ locale }}</span>
+            <Textarea v-model.trim="form.announcement!.content[locale]" rows="2" />
           </label>
         </div>
       </section>
 
-      <section class="rounded-xl border theme-surface-soft p-4">
+      <section class="rounded-xl border bg-muted/30 p-4">
         <div class="mb-4 flex items-center justify-between gap-3">
-          <h3 class="text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.fields.footerLinks') }}</h3>
-          <button type="button" class="rounded-lg border theme-btn-secondary px-3 py-1.5 text-xs font-semibold" @click="addFooterLink">
+          <h3 class="text-base font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.fields.footerLinks') }}</h3>
+          <Button type="button" variant="outline" size="sm" @click="addFooterLink">
             {{ t('personalCenter.reseller.siteConfig.actions.addLink') }}
-          </button>
+          </Button>
         </div>
-        <div v-if="!form.footer_links?.length" class="rounded-lg border border-dashed px-4 py-5 text-sm theme-text-muted">
+        <div v-if="!form.footer_links?.length" class="rounded-lg border border-dashed px-4 py-5 text-sm text-muted-foreground">
           {{ t('personalCenter.reseller.siteConfig.emptyLinks') }}
         </div>
-        <div v-for="(link, index) in form.footer_links" :key="index" class="mb-4 grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[1fr_1fr_auto]">
-          <input v-model.trim="link.name['zh-CN']" type="text" class="form-input-lg" :placeholder="`${t('personalCenter.reseller.siteConfig.fields.linkName')} zh-CN`" />
-          <input v-model.trim="link.url" type="text" class="form-input-lg" placeholder="https://example.com" />
-          <button type="button" class="rounded-lg border px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10" @click="removeFooterLink(Number(index))">
+        <div v-for="(link, index) in form.footer_links" :key="index" class="mb-4 grid grid-cols-1 gap-3 rounded-lg border bg-card p-3 md:grid-cols-[1fr_1fr_auto]">
+          <Input v-model.trim="link.name['zh-CN']" type="text" :placeholder="`${t('personalCenter.reseller.siteConfig.fields.linkName')} zh-CN`" />
+          <Input v-model.trim="link.url" type="text" placeholder="https://example.com" />
+          <Button type="button" variant="ghost" size="sm" class="text-destructive hover:bg-destructive/10 hover:text-destructive" @click="removeFooterLink(Number(index))">
             {{ t('personalCenter.reseller.siteConfig.actions.remove') }}
-          </button>
+          </Button>
         </div>
       </section>
 
       <section class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="rounded-xl border theme-surface-soft p-4">
-          <h3 class="mb-4 text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.fields.navVisibility') }}</h3>
-          <div class="flex flex-wrap gap-4 text-sm theme-text-secondary">
+        <div class="rounded-xl border bg-muted/30 p-4">
+          <h3 class="mb-4 text-base font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.fields.navVisibility') }}</h3>
+          <div class="flex flex-wrap gap-4 text-sm text-foreground">
             <label v-for="key in builtinNavKeys" :key="key" class="inline-flex items-center gap-2">
-              <input v-model="form.nav_config!.builtin[key]" type="checkbox" class="h-4 w-4 rounded border-gray-300" />
+              <Checkbox v-model="form.nav_config!.builtin[key]" />
               {{ key }}
             </label>
           </div>
         </div>
-        <div class="rounded-xl border theme-surface-soft p-4">
-          <h3 class="mb-4 text-base font-bold theme-text-primary">{{ t('personalCenter.reseller.siteConfig.sections.theme') }}</h3>
+        <div class="rounded-xl border bg-muted/30 p-4">
+          <h3 class="mb-4 text-base font-bold text-foreground">{{ t('personalCenter.reseller.siteConfig.sections.theme') }}</h3>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label class="block">
-              <span class="mb-2 block text-xs theme-text-muted">{{ t('personalCenter.reseller.siteConfig.fields.primaryColor') }}</span>
-              <input v-model.trim="form.theme!.primary_color" type="text" class="w-full form-input-lg" placeholder="#2563eb" />
+              <span class="mb-2 block text-xs text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.primaryColor') }}</span>
+              <Input v-model.trim="form.theme!.primary_color" type="text" placeholder="#2563eb" />
             </label>
             <label class="block">
-              <span class="mb-2 block text-xs theme-text-muted">{{ t('personalCenter.reseller.siteConfig.fields.accentColor') }}</span>
-              <input v-model.trim="form.theme!.accent_color" type="text" class="w-full form-input-lg" placeholder="#16a34a" />
+              <span class="mb-2 block text-xs text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.accentColor') }}</span>
+              <Input v-model.trim="form.theme!.accent_color" type="text" placeholder="#16a34a" />
             </label>
             <label class="block">
-              <span class="mb-2 block text-xs theme-text-muted">{{ t('personalCenter.reseller.siteConfig.fields.surfaceColor') }}</span>
-              <input v-model.trim="form.theme!.surface_color" type="text" class="w-full form-input-lg" placeholder="#ffffff" />
+              <span class="mb-2 block text-xs text-muted-foreground">{{ t('personalCenter.reseller.siteConfig.fields.surfaceColor') }}</span>
+              <Input v-model.trim="form.theme!.surface_color" type="text" placeholder="#ffffff" />
             </label>
           </div>
         </div>
       </section>
 
       <div class="flex justify-end">
-        <button
-          type="submit"
-          :disabled="saving"
-          class="inline-flex h-11 items-center justify-center rounded-xl theme-btn-primary px-5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button type="submit" :disabled="saving">
           {{ saving ? t('personalCenter.reseller.siteConfig.saving') : t('personalCenter.reseller.siteConfig.save') }}
-        </button>
+        </Button>
       </div>
     </form>
-  </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -180,8 +181,16 @@ import {
     type ResellerSiteConfigPayload,
     type ResellerSiteConfigSnapshotData,
 } from '../../api'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { useAppStore } from '../../stores/app'
-import { pageAlertClass, type PageAlert } from '../../utils/alerts'
+import { type PageAlert } from '../../utils/alerts'
 import {
     blankLocalizedText,
     canEditResellerSiteConfig,
@@ -189,6 +198,8 @@ import {
     normalizeLocalizedTextForForm,
     resellerLocales,
 } from '../../utils/resellerSiteConfig'
+
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 
 const { t } = useI18n()
 const appStore = useAppStore()
