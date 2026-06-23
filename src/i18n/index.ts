@@ -260,6 +260,7 @@ const messages = {
             },
             common: {
                 loadFailed: '个人中心数据加载失败，请稍后重试',
+                saveSuccess: '保存成功',
                 saveFailed: '保存失败，请稍后重试',
             },
             overview: {
@@ -1993,6 +1994,7 @@ const messages = {
             },
             common: {
                 loadFailed: '個人中心資料載入失敗，請稍後重試',
+                saveSuccess: '儲存成功',
                 saveFailed: '保存失敗，請稍後重試',
             },
             overview: {
@@ -3679,6 +3681,7 @@ const messages = {
             },
             common: {
                 loadFailed: 'Failed to load personal center data, please try again later',
+                saveSuccess: 'Saved successfully',
                 saveFailed: 'Save failed, please try again later',
             },
             overview: {

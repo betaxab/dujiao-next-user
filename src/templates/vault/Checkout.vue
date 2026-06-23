@@ -68,7 +68,7 @@
         />
 
         <!-- 优惠码 -->
-        <section class="rounded-xl border bg-card p-5">
+        <section v-if="!isResellerTenant" class="rounded-xl border bg-card p-5">
           <h2 class="mb-3.5 text-lg font-bold">{{ t('checkout.couponTitle') }}</h2>
           <Input v-model="couponCode" type="text" class="h-11" :placeholder="t('checkout.couponPlaceholder')" />
         </section>
@@ -124,9 +124,11 @@
         <div class="grid gap-2.5">
           <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('cart.itemsCount') }}</span><span class="font-semibold text-foreground">{{ totalItems }}</span></div>
           <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewOriginal') }}</span><span class="font-semibold text-foreground">{{ formatPrice(previewOriginal, previewCurrency) }}</span></div>
-          <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewCoupon') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewCoupon) ? 'text-primary' : 'text-foreground'">{{ formatDiscountPrice(previewCoupon, previewCurrency) }}</span></div>
-          <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewPromotion') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewPromotion) ? 'text-primary' : 'text-foreground'">{{ formatDiscountPrice(previewPromotion, previewCurrency) }}</span></div>
-          <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewWholesale') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewWholesale) ? 'text-[color:var(--teal-strong)]' : 'text-foreground'">{{ formatDiscountPrice(previewWholesale, previewCurrency) }}</span></div>
+          <template v-if="!isResellerTenant">
+            <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewCoupon') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewCoupon) ? 'text-primary' : 'text-foreground'">{{ formatDiscountPrice(previewCoupon, previewCurrency) }}</span></div>
+            <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewPromotion') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewPromotion) ? 'text-primary' : 'text-foreground'">{{ formatDiscountPrice(previewPromotion, previewCurrency) }}</span></div>
+            <div class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewWholesale') }}</span><span class="font-semibold" :class="hasPositiveAmount(previewWholesale) ? 'text-[color:var(--teal-strong)]' : 'text-foreground'">{{ formatDiscountPrice(previewWholesale, previewCurrency) }}</span></div>
+          </template>
           <div v-if="Number(previewMemberDiscount) > 0" class="flex items-center justify-between text-[13.5px]"><span class="text-muted-foreground">{{ t('checkout.previewMemberDiscount') }}</span><span class="font-semibold text-[color:var(--gold-strong)]">-{{ formatPrice(previewMemberDiscount, previewCurrency) }}</span></div>
           <div class="mt-1 flex items-center justify-between border-t pt-3 font-bold text-foreground"><span>{{ t('checkout.previewTotal') }}</span><span class="text-[22px] text-primary tabular-nums">{{ formatPrice(previewTotal, previewCurrency) }}</span></div>
         </div>
@@ -215,7 +217,7 @@ const {
   itemStockExceeded, itemStockHint,
   checkoutItemCurrency, checkoutItemPriceParts, checkoutItemOriginalPriceParts, checkoutItemHasPriceDiscount,
   manualFormProducts, manualFormData, submitAttempted, getManualFieldLabel, getManualFieldPlaceholder, manualFieldError,
-  couponCode,
+  couponCode, isResellerTenant,
   checkoutMode, guestEmail, guestPassword, guestEmailValid,
   guestCaptchaEnabled, captchaProvider, guestCaptchaPayload, guestTurnstileToken, guestTurnstileSiteKey,
   guestImageCaptchaRef, guestTurnstileRef, handleGuestCaptchaConfigStale,

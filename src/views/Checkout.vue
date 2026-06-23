@@ -95,7 +95,7 @@
             :manual-field-error="manualFieldError"
           />
 
-          <div class="rounded-2xl border bg-card text-card-foreground p-6">
+          <div v-if="!isResellerTenant" class="rounded-2xl border bg-card text-card-foreground p-6">
             <h2 class="mb-4 text-lg font-bold text-foreground">{{ t('checkout.couponTitle') }}</h2>
             <Input
               v-model="couponCode"
@@ -184,33 +184,35 @@
               <span>{{ t('checkout.previewOriginal') }}</span>
               <span class="font-mono text-foreground">{{ formatPrice(previewOriginal, previewCurrency) }}</span>
             </div>
-            <div class="flex items-center justify-between">
-              <span>{{ t('checkout.previewCoupon') }}</span>
-              <span
-                class="font-mono"
-                :class="hasPositiveAmount(previewCoupon) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
-              >
-                {{ formatDiscountPrice(previewCoupon, previewCurrency) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>{{ t('checkout.previewPromotion') }}</span>
-              <span
-                class="font-mono"
-                :class="hasPositiveAmount(previewPromotion) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
-              >
-                {{ formatDiscountPrice(previewPromotion, previewCurrency) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>{{ t('checkout.previewWholesale') }}</span>
-              <span
-                class="font-mono"
-                :class="hasPositiveAmount(previewWholesale) ? 'text-emerald-600 dark:text-emerald-300' : 'text-foreground'"
-              >
-                {{ formatDiscountPrice(previewWholesale, previewCurrency) }}
-              </span>
-            </div>
+            <template v-if="!isResellerTenant">
+              <div class="flex items-center justify-between">
+                <span>{{ t('checkout.previewCoupon') }}</span>
+                <span
+                  class="font-mono"
+                  :class="hasPositiveAmount(previewCoupon) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
+                >
+                  {{ formatDiscountPrice(previewCoupon, previewCurrency) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>{{ t('checkout.previewPromotion') }}</span>
+                <span
+                  class="font-mono"
+                  :class="hasPositiveAmount(previewPromotion) ? 'text-rose-600 dark:text-rose-300' : 'text-foreground'"
+                >
+                  {{ formatDiscountPrice(previewPromotion, previewCurrency) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>{{ t('checkout.previewWholesale') }}</span>
+                <span
+                  class="font-mono"
+                  :class="hasPositiveAmount(previewWholesale) ? 'text-emerald-600 dark:text-emerald-300' : 'text-foreground'"
+                >
+                  {{ formatDiscountPrice(previewWholesale, previewCurrency) }}
+                </span>
+              </div>
+            </template>
             <div v-if="Number(previewMemberDiscount) > 0" class="flex items-center justify-between">
               <span>{{ t('checkout.previewMemberDiscount') }}</span>
               <span class="font-mono text-amber-600 dark:text-amber-300">-{{ formatPrice(previewMemberDiscount, previewCurrency) }}</span>
@@ -330,7 +332,7 @@ const {
   itemStockExceeded, itemStockHint,
   checkoutItemCurrency, checkoutItemPriceParts, checkoutItemOriginalPriceParts, checkoutItemHasPriceDiscount,
   manualFormProducts, manualFormData, submitAttempted, getManualFieldLabel, getManualFieldPlaceholder, manualFieldError,
-  couponCode,
+  couponCode, isResellerTenant,
   checkoutMode, guestEmail, guestPassword, guestEmailValid,
   guestCaptchaEnabled, captchaProvider, guestCaptchaPayload, guestTurnstileToken, guestTurnstileSiteKey,
   guestImageCaptchaRef, guestTurnstileRef, handleGuestCaptchaConfigStale,
