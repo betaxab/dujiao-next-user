@@ -292,7 +292,7 @@ const handleImageError = () => {
 }
 
 .pcard-tile {
-  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.4);
+  /*box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.4);*/
   transition: transform 350ms var(--ui-ease-out);
 }
 

@@ -70,7 +70,7 @@ const onTouchEnd = (e: TouchEvent) => {
 </script>
 
 <style scoped>
-.stage-tile {
+/*.stage-tile {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 24px 48px -20px rgba(0, 0, 0, 0.35);
-}
+}*/
 </style>
