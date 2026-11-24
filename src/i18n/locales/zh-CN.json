@@ -169,6 +169,9 @@
     }
   },
   "products": {
+    "layout": "商品布局",
+    "gridLayout": "卡片布局",
+    "listLayout": "列表布局",
     "priceAria": "价格 {price}",
     "promotionPriceAria": "促销价 {price}",
     "originalPriceAria": "原价 {price}",

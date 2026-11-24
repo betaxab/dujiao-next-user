@@ -2,7 +2,7 @@
   <!-- row：列表模式的表格行。列宽与 ProductCatalog 里的表头保持一致（见 rowColsClass） -->
   <article
     v-if="row"
-    class="prow group relative cursor-pointer items-center gap-x-4 rounded-2xl bg-secondary/60 p-2 md:pr-3 focus-visible:outline-2 focus-visible:outline-primary max-md:flex max-md:gap-3 md:px-3"
+    class="prow group relative cursor-pointer items-center gap-x-4 rounded-2xl bg-secondary/60 p-3 focus-visible:outline-2 focus-visible:outline-primary max-md:flex max-md:gap-3 md:px-4"
     :class="[rowColsClass, soldOut && 'opacity-55']"
     :style="{ '--h': hue }"
     role="link"

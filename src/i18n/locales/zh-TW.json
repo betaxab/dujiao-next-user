@@ -169,6 +169,9 @@
     }
   },
   "products": {
+    "layout": "商品版面",
+    "gridLayout": "卡片版面",
+    "listLayout": "列表版面",
     "priceAria": "價格 {price}",
     "promotionPriceAria": "促銷價 {price}",
     "originalPriceAria": "原價 {price}",

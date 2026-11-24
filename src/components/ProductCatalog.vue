@@ -71,9 +71,17 @@
       </aside>
 
       <div class="min-w-0 flex-1 pt-4 lg:pt-0">
+        <div class="mb-5 flex items-center gap-3">
+          <h2 class="min-w-0 truncate font-bold tracking-tight" :class="selectedName ? 'text-[17px] md:text-[19px]' : 'text-[22px] md:text-2xl'">
+            {{ selectedName || t('products.allCategories') }}
+          </h2>
+          <div class="ml-auto shrink-0">
+            <ProductLayoutSwitch :model-value="currentLayout" @update:model-value="layoutOverride = $event" />
+          </div>
+        </div>
         <div v-if="loading" :class="isList ? 'theme-float rounded-[22px] bg-card p-2 md:p-3' : gridClass" aria-hidden="true">
           <template v-if="isList">
-            <div v-for="i in 8" :key="i" class="flex items-center gap-3 px-2 py-2 md:px-3">
+            <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-3 md:px-4">
               <div class="h-12 w-12 shrink-0 rounded-xl theme-skeleton"></div>
               <div class="h-4 w-1/3 rounded theme-skeleton"></div>
               <div class="ml-auto h-5 w-20 rounded theme-skeleton"></div>
@@ -93,23 +101,25 @@
         </div>
 
         <template v-else-if="groups.length > 0">
-          <!-- 列表模式：每个分类是一张价目表，表头一行、商品一行一条 -->
-          <template v-if="isList">
-            <section v-for="group in groups" :key="group.categoryId ?? 'uncategorized'" class="theme-float mb-5 rounded-[22px] bg-card p-2 last:mb-0 md:p-3">
-              <div class="flex items-center gap-3 px-2 pb-2 pt-1.5 md:px-3 md:pt-2">
-                <img v-if="group.categoryIcon" :src="getImageUrl(group.categoryIcon)" alt="" loading="lazy" class="h-8 w-8 shrink-0 rounded-[10px] object-cover" />
-                <h2 class="min-w-0 truncate text-[17px] font-bold tracking-tight md:text-[19px]">{{ group.categoryName }}</h2>
-                <span class="shrink-0 rounded-full bg-secondary px-2 text-xs font-semibold leading-[22px] tabular-nums text-muted-foreground">{{ group.products.length }}</span>
-                <button
-                  v-if="group.categoryId && selectedCategory !== group.categoryId"
-                  type="button"
-                  class="theme-pill-link ml-auto"
-                  @click="selectCategory(group.categoryId)"
-                >
-                  {{ t('home.featured.viewAll') }}
-                  <ChevronRight class="h-3.5 w-3.5" aria-hidden="true" />
-                </button>
-              </div>
+          <section
+            v-for="group in groups"
+            :key="group.categoryId ?? 'uncategorized'"
+            class="mb-9 last:mb-0"
+          >
+            <div v-if="!selectedCategory || group.categoryId !== selectedCategory" class="mb-4 flex items-center gap-2 sm:gap-3">
+              <img v-if="group.categoryIcon" :src="getImageUrl(group.categoryIcon)" alt="" loading="lazy" class="shrink-0 object-cover" :class="isList ? 'h-8 w-8 rounded-[10px]' : 'h-9 w-9 rounded-[11px]'" />
+              <h2 class="min-w-0 truncate text-[17px] font-bold tracking-tight md:text-[19px]">{{ group.categoryName }}</h2>
+              <button
+                v-if="group.categoryId && selectedCategory !== group.categoryId"
+                type="button"
+                class="theme-pill-link ml-auto shrink-0"
+                @click="selectCategory(group.categoryId)"
+              >
+                {{ t('home.featured.viewAll') }}
+                <ChevronRight class="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+            <div v-if="isList" class="theme-float rounded-[22px] bg-card p-2 md:p-3">
               <div class="hidden items-center gap-x-4 px-3 pb-2 text-xs text-muted-foreground" :class="rowColsClass" aria-hidden="true">
                 <span>{{ t('bottomNav.products') }}</span>
                 <span>{{ t('productDetail.fulfillmentLabel') }}</span>
@@ -127,26 +137,8 @@
                   @quick-buy="openQuickBuy"
                 />
               </div>
-            </section>
-          </template>
-
-          <template v-else>
-          <section v-for="group in groups" :key="group.categoryId ?? 'uncategorized'" class="mb-9 last:mb-0">
-            <div class="mb-4 flex items-center gap-3">
-              <img v-if="group.categoryIcon" :src="getImageUrl(group.categoryIcon)" alt="" loading="lazy" class="h-9 w-9 shrink-0 rounded-[11px] object-cover" />
-              <h2 class="min-w-0 truncate text-[19px] font-bold tracking-tight md:text-[22px]">{{ group.categoryName }}</h2>
-              <!-- 分页下一页里未必装得下整个分类，可点进去看全部 -->
-              <button
-                v-if="group.categoryId && selectedCategory !== group.categoryId"
-                type="button"
-                class="theme-pill-link ml-auto"
-                @click="selectCategory(group.categoryId)"
-              >
-                {{ t('home.featured.viewAll') }}
-                <ChevronRight class="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
             </div>
-            <div :class="gridClass">
+            <div v-else :class="gridClass">
               <ProductCard
                 v-for="(product, index) in group.products"
                 :key="product.id"
@@ -157,7 +149,6 @@
               />
             </div>
           </section>
-          </template>
 
           <PaginationNav
             :current-page="currentPage"
@@ -204,6 +195,7 @@ import { useLocalized } from '../composables/useProduct'
 import { useProductList } from '../composables/useProductList'
 import { useProductListGroups } from '../composables/useProductListGroups'
 import ProductCard, { rowColsClass } from './ProductCard.vue'
+import ProductLayoutSwitch from './ProductLayoutSwitch.vue'
 import ProductQuickBuy from './ProductQuickBuy.vue'
 import PaginationNav from './PaginationNav.vue'
 import EmptyState from './EmptyState.vue'
@@ -254,7 +246,9 @@ const {
 const groups = useProductListGroups(products, categoryMap)
 
 const isDesktop = useMediaQuery('(min-width: 1024px)')
-const isList = computed(() => props.layout === 'list')
+const layoutOverride = ref<typeof props.layout | null>(null)
+const currentLayout = computed(() => layoutOverride.value ?? props.layout)
+const isList = computed(() => currentLayout.value === 'list')
 const gridClass = 'grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:grid-cols-4'
 // 窄屏商品数量足够时保留首张主推卡
 const LEAD_MIN_GROUP_SIZE = 7

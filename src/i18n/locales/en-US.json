@@ -169,6 +169,9 @@
     }
   },
   "products": {
+    "layout": "Product layout",
+    "gridLayout": "Card layout",
+    "listLayout": "List layout",
     "priceAria": "Price {price}",
     "promotionPriceAria": "Promotional price {price}",
     "originalPriceAria": "Original price {price}",
