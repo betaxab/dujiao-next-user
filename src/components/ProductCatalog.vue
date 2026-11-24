@@ -7,19 +7,19 @@
           <div class="relative min-w-0 flex-1">
             <Search class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input
-              v-model="searchQuery"
+              v-model="sidebarSearch"
               type="search"
               class="catalog-search theme-float h-10 w-full rounded-full bg-card pl-10 pr-10 text-sm lg:bg-secondary lg:shadow-none text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
               :placeholder="t('products.searchPlaceholder')"
               :aria-label="t('products.searchPlaceholder')"
-              @keydown.enter="onSearch"
+              @keydown.enter="submitSearch('sidebar')"
             />
             <button
-              v-if="searchQuery"
+              v-if="sidebarSearch"
               type="button"
               class="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground"
               :aria-label="t('products.clearFilters')"
-              @click="clearSearch"
+              @click="clearSearchInput('sidebar')"
             >
               <X class="h-4 w-4" />
             </button>
@@ -71,6 +71,27 @@
       </aside>
 
       <div class="min-w-0 flex-1 pt-4 lg:pt-0">
+        <form role="search" class="relative mb-5 hidden md:block" @submit.prevent="submitSearch('catalog')">
+          <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Input
+            v-model="catalogSearch"
+            type="search"
+            class="h-11 rounded-xl bg-card pl-10 pr-12 [&::-webkit-search-cancel-button]:hidden"
+            :placeholder="t('products.searchPlaceholder')"
+            :aria-label="t('products.searchPlaceholder')"
+          />
+          <Button
+            v-if="catalogSearch"
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground"
+            :aria-label="t('products.clearFilters')"
+            @click="clearSearchInput('catalog')"
+          >
+            <X aria-hidden="true" />
+          </Button>
+        </form>
         <div class="mb-5 flex items-center gap-3">
           <h2 class="min-w-0 truncate font-bold tracking-tight" :class="selectedName ? 'text-[17px] md:text-[19px]' : 'text-[22px] md:text-2xl'">
             {{ selectedName || t('products.allCategories') }}
@@ -158,7 +179,7 @@
           :title="(searchQuery || selectedCategory) ? t('products.emptyFiltered') : t('products.empty')"
         >
           <template v-if="searchQuery || selectedCategory" #action>
-            <Button variant="secondary" @click="clearSearch(); selectCategory(null)">
+            <Button variant="secondary" @click="clearFilters">
               {{ t('products.clearFilters') }}
             </Button>
           </template>
@@ -191,6 +212,7 @@ import ProductQuickBuy from './ProductQuickBuy.vue'
 import PaginationNav from './PaginationNav.vue'
 import EmptyState from './EmptyState.vue'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const props = withDefaults(defineProps<{
   /** 取消分类筛选后回到的路由 */
@@ -233,6 +255,47 @@ const {
   // 首页商品区上面还有横幅，翻页后回到商品区顶部（留出固定导航栏的高度），而不是整页顶部
   getScrollTop: () => Math.max(0, (rootRef.value?.getBoundingClientRect().top ?? 0) + window.scrollY - 96),
 })
+
+type SearchInput = 'sidebar' | 'catalog'
+const searchInputs = ref<Record<SearchInput, string>>({ sidebar: '', catalog: '' })
+let activeSearchInput: SearchInput = 'sidebar'
+
+const applySearchInput = (input: SearchInput) => {
+  activeSearchInput = input
+  searchQuery.value = searchInputs.value[input]
+}
+
+const searchModel = (input: SearchInput) => computed({
+  get: () => searchInputs.value[input],
+  set: (value: string | number) => {
+    searchInputs.value[input] = String(value)
+    applySearchInput(input)
+  },
+})
+
+const sidebarSearch = searchModel('sidebar')
+const catalogSearch = searchModel('catalog')
+
+// URL 恢复搜索时只同步当前输入框，保留另一处的输入。
+watch(searchQuery, (value) => {
+  searchInputs.value[activeSearchInput] = value
+})
+
+const submitSearch = (input: SearchInput) => {
+  applySearchInput(input)
+  onSearch()
+}
+
+const clearSearchInput = (input: SearchInput) => {
+  searchInputs.value[input] = ''
+  if (activeSearchInput === input) clearSearch()
+}
+
+const clearFilters = () => {
+  searchInputs.value = { sidebar: '', catalog: '' }
+  clearSearch()
+  selectCategory(null)
+}
 
 const groups = useProductListGroups(products, categoryMap)
 
