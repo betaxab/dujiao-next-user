@@ -151,7 +151,7 @@
                 v-for="(product, index) in group.products"
                 :key="product.id"
                 :product="product"
-                :lead="index === 0 && group.products.length >= LEAD_MIN_GROUP_SIZE"
+                :lead="!isDesktop && index === 0 && group.products.length >= LEAD_MIN_GROUP_SIZE"
                 @click="goToProduct"
                 @quick-buy="openQuickBuy"
               />
@@ -195,6 +195,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronRight, LayoutGrid, Search, X } from 'lucide-vue-next'
@@ -252,10 +253,10 @@ const {
 
 const groups = useProductListGroups(products, categoryMap)
 
-// 大屏左侧有分类栏，网格比通栏时少一列
+const isDesktop = useMediaQuery('(min-width: 1024px)')
 const isList = computed(() => props.layout === 'list')
-const gridClass = 'grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6'
-// 大卡占 2 列 2 行，分类里商品凑不满两行时旁边会留空，所以够多才放大首位
+const gridClass = 'grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:grid-cols-4'
+// 窄屏商品数量足够时保留首张主推卡
 const LEAD_MIN_GROUP_SIZE = 7
 
 // 只要有一个分类带图标，左侧栏就给所有项留出图标位，文字才能对齐

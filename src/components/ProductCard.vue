@@ -129,12 +129,14 @@
         {{ description }}
       </p>
       <div class="mt-1 flex flex-wrap items-center justify-between gap-x-2 text-xs text-muted-foreground">
-        <span class="inline-flex min-w-0 items-center gap-1">
-          <Zap v-if="product.fulfillment_type === 'auto'" class="h-3 w-3 shrink-0 fill-current text-info" aria-hidden="true" />
-          <Clock v-else class="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
-          <span class="shrink-0">{{ getFulfillmentTypeLabel(product.fulfillment_type) }}</span>
+        <span class="inline-flex min-w-0 items-center gap-1 lg:flex-wrap">
+          <span class="inline-flex shrink-0 items-center gap-1">
+            <Zap v-if="product.fulfillment_type === 'auto'" class="h-3 w-3 shrink-0 fill-current text-info" aria-hidden="true" />
+            <Clock v-else class="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+            {{ getFulfillmentTypeLabel(product.fulfillment_type) }}
+          </span>
           <span v-for="(tag, tagIndex) in (product.tags ?? []).slice(0, maxTags)" :key="tagIndex"
-            class="min-w-0 truncate rounded bg-secondary px-1.5 leading-5">
+            class="min-w-0 max-w-full truncate rounded bg-secondary px-1.5 leading-5 lg:shrink-0">
             {{ tag }}
           </span>
         </span>
