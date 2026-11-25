@@ -97,7 +97,7 @@
             {{ selectedName || t('products.allCategories') }}
           </h2>
           <div class="ml-auto shrink-0">
-            <ProductLayoutSwitch :model-value="currentLayout" @update:model-value="layoutOverride = $event" />
+            <ProductLayoutSwitch :model-value="currentLayout" @update:model-value="setLayout" />
           </div>
         </div>
         <div v-if="loading" :class="isList ? 'flex flex-col gap-3' : gridClass" aria-hidden="true">
@@ -203,6 +203,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronRight, LayoutGrid, Search, X } from 'lucide-vue-next'
 import { getImageUrl } from '../utils/image'
+import { readProductLayoutPreference, saveProductLayoutPreference, type ProductLayout } from '../utils/productLayoutPreference'
 import { useLocalized } from '../composables/useProduct'
 import { useProductList } from '../composables/useProductList'
 import { useProductListGroups } from '../composables/useProductListGroups'
@@ -218,7 +219,7 @@ const props = withDefaults(defineProps<{
   /** 取消分类筛选后回到的路由 */
   homeRouteName?: string
   /** grid：卡片网格；list：紧凑的横条，一屏能看更多商品 */
-  layout?: 'grid' | 'list'
+  layout?: ProductLayout
 }>(), {
   homeRouteName: 'home',
   layout: 'grid',
@@ -300,7 +301,11 @@ const clearFilters = () => {
 const groups = useProductListGroups(products, categoryMap)
 
 const isDesktop = useMediaQuery('(min-width: 1024px)')
-const layoutOverride = ref<typeof props.layout | null>(null)
+const layoutOverride = ref(readProductLayoutPreference())
+const setLayout = (layout: ProductLayout) => {
+  layoutOverride.value = layout
+  saveProductLayoutPreference(layout)
+}
 const currentLayout = computed(() => layoutOverride.value ?? props.layout)
 const isList = computed(() => currentLayout.value === 'list')
 const gridClass = 'grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:grid-cols-4'
