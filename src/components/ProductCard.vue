@@ -1,9 +1,8 @@
 <template>
-  <!-- row：列表模式的表格行。列宽与 ProductCatalog 里的表头保持一致（见 rowColsClass） -->
   <article
     v-if="row"
-    class="prow group relative cursor-pointer items-center gap-x-4 rounded-2xl bg-secondary/60 p-3 focus-visible:outline-2 focus-visible:outline-primary max-md:flex max-md:gap-3 md:px-4"
-    :class="[rowColsClass, soldOut && 'opacity-55']"
+    class="prow theme-float group relative cursor-pointer items-center gap-x-4 rounded-2xl bg-card p-3 focus-visible:outline-2 focus-visible:outline-primary max-md:flex max-md:gap-3 md:grid md:grid-cols-[minmax(0,1fr)_6.5rem_8.5rem_8rem_5.25rem] md:px-4"
+    :class="soldOut && 'opacity-55'"
     :style="{ '--h': hue }"
     role="link"
     tabindex="0"
@@ -35,7 +34,7 @@
             {{ getFulfillmentTypeLabel(product.fulfillment_type) }}
           </span>
           <span class="shrink-0 md:hidden" :class="stock.text">{{ getStockStatusLabel(product) }}</span>
-          <span v-for="(tag, tagIndex) in (product.tags ?? []).slice(0, maxTags)" :key="tagIndex" class="truncate rounded bg-card px-1.5 leading-5 max-md:hidden">
+          <span v-for="(tag, tagIndex) in (product.tags ?? []).slice(0, maxTags)" :key="tagIndex" class="truncate rounded bg-secondary px-1.5 leading-5 max-md:hidden">
             {{ tag }}
           </span>
         </p>
@@ -44,7 +43,7 @@
 
     <span class="max-md:hidden">
       <span
-        class="inline-flex h-6 items-center gap-1 rounded-full bg-card px-2.5 text-xs font-medium text-foreground"
+        class="inline-flex h-6 items-center gap-1 rounded-full bg-secondary px-2.5 text-xs font-medium text-foreground"
       >
         <Zap v-if="product.fulfillment_type === 'auto'" class="h-3 w-3 shrink-0 fill-current text-info" aria-hidden="true" />
         <Clock v-else class="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" />
@@ -182,11 +181,6 @@
   </article>
 </template>
 
-<script lang="ts">
-/** 列表模式的列：商品 | 交付方式 | 库存 | 价格 | 购买。表头和每一行共用，才能对齐 */
-export const rowColsClass = 'md:grid md:grid-cols-[minmax(0,1fr)_6.5rem_8.5rem_8rem_5.25rem]'
-</script>
-
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { computed, ref, watch } from 'vue'
@@ -199,7 +193,7 @@ const props = withDefaults(defineProps<{
   maxTags?: number
   /** 分类首位的大卡：占 2 列 2 行，带描述和购买按钮 */
   lead?: boolean
-  /** 列表模式的表格行，需放在使用 rowColsClass 表头的容器里 */
+  /** 列表模式的横向商品卡片 */
   row?: boolean
 }>(), {
   maxTags: 2,

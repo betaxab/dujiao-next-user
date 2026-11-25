@@ -79,9 +79,9 @@
             <ProductLayoutSwitch :model-value="currentLayout" @update:model-value="layoutOverride = $event" />
           </div>
         </div>
-        <div v-if="loading" :class="isList ? 'theme-float rounded-[22px] bg-card p-2 md:p-3' : gridClass" aria-hidden="true">
+        <div v-if="loading" :class="isList ? 'flex flex-col gap-3' : gridClass" aria-hidden="true">
           <template v-if="isList">
-            <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-3 md:px-4">
+            <div v-for="i in 8" :key="i" class="theme-float flex items-center gap-3 rounded-2xl bg-card p-3 md:px-4">
               <div class="h-12 w-12 shrink-0 rounded-xl theme-skeleton"></div>
               <div class="h-4 w-1/3 rounded theme-skeleton"></div>
               <div class="ml-auto h-5 w-20 rounded theme-skeleton"></div>
@@ -119,24 +119,15 @@
                 <ChevronRight class="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
-            <div v-if="isList" class="theme-float rounded-[22px] bg-card p-2 md:p-3">
-              <div class="hidden items-center gap-x-4 px-3 pb-2 text-xs text-muted-foreground" :class="rowColsClass" aria-hidden="true">
-                <span>{{ t('bottomNav.products') }}</span>
-                <span>{{ t('productDetail.fulfillmentLabel') }}</span>
-                <span>{{ t('quickBuy.stock') }}</span>
-                <span class="text-right">{{ t('products.price') }}</span>
-                <span></span>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <ProductCard
-                  v-for="product in group.products"
-                  :key="product.id"
-                  :product="product"
-                  row
-                  @click="goToProduct"
-                  @quick-buy="openQuickBuy"
-                />
-              </div>
+            <div v-if="isList" class="flex flex-col gap-3">
+              <ProductCard
+                v-for="product in group.products"
+                :key="product.id"
+                :product="product"
+                row
+                @click="goToProduct"
+                @quick-buy="openQuickBuy"
+              />
             </div>
             <div v-else :class="gridClass">
               <ProductCard
@@ -194,7 +185,7 @@ import { getImageUrl } from '../utils/image'
 import { useLocalized } from '../composables/useProduct'
 import { useProductList } from '../composables/useProductList'
 import { useProductListGroups } from '../composables/useProductListGroups'
-import ProductCard, { rowColsClass } from './ProductCard.vue'
+import ProductCard from './ProductCard.vue'
 import ProductLayoutSwitch from './ProductLayoutSwitch.vue'
 import ProductQuickBuy from './ProductQuickBuy.vue'
 import PaginationNav from './PaginationNav.vue'
