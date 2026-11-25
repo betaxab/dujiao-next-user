@@ -17,9 +17,9 @@
 
         <template v-else>
         <div class="mb-7">
-          <p class="text-[13px] font-semibold text-muted-foreground">{{ brandSiteName }}</p>
-          <h1 class="mt-2 text-[28px] font-bold leading-tight tracking-tight">{{ t('auth.register.title') }}</h1>
-          <p class="mt-2 text-sm text-muted-foreground">{{ t('auth.register.subtitle') }}</p>
+          <p class="text-[13px] text-center font-semibold text-muted-foreground">{{ brandSiteName }}</p>
+          <h1 class="mt-2 text-[28px] text-center font-bold leading-tight tracking-tight">{{ t('auth.register.title') }}</h1>
+          <p class="mt-2 text-sm text-center text-muted-foreground">{{ t('auth.register.subtitle') }}</p>
         </div>
 
         <form class="space-y-6" @submit.prevent="handleRegister">

@@ -9,11 +9,11 @@
 
       <div class="theme-float rounded-[22px] bg-card p-6 sm:rounded-[28px] sm:p-9">
         <div class="mb-7">
-          <p class="text-[13px] font-semibold text-muted-foreground">{{ brandSiteName }}</p>
-          <h1 class="mt-2 text-[28px] font-bold leading-tight tracking-tight">
+          <p class="text-[13px] text-center font-semibold text-muted-foreground">{{ brandSiteName }}</p>
+          <h1 class="mt-2 text-[28px] text-center font-bold leading-tight tracking-tight">
             {{ step === 'totp' ? t('auth.login.totp.title') : t('auth.login.title') }}
           </h1>
-          <p class="mt-2 text-sm text-muted-foreground">
+          <p class="mt-2 text-sm text-center text-muted-foreground">
             {{ step === 'totp' ? t('auth.login.totp.subtitle') : t('auth.login.subtitle') }}
           </p>
         </div>
