@@ -27,7 +27,7 @@
           ]"
         />
 
-        <!-- 大屏：左列图片 + 详情，右列购买面板跟随滚动；小屏按 图片 → 购买 → 详情 顺序堆叠 -->
+        <!-- 大屏：左列图片和详情，右列购买面板；小屏按图片、购买面板、详情的顺序堆叠 -->
         <div class="grid gap-5 lg:grid-cols-12 lg:gap-6">
           <ProductStage
             class="lg:col-span-7"
@@ -38,7 +38,7 @@
             @update:current-image="currentImage = $event"
           />
 
-          <div class="buy-panel theme-float rounded-[22px] bg-card p-5 md:rounded-[28px] md:p-8 lg:sticky lg:top-24 lg:col-span-5 lg:row-span-2 lg:self-start lg:overflow-y-auto">
+          <div class="theme-float rounded-[22px] bg-card p-5 md:rounded-[28px] md:p-8 lg:col-span-5 lg:row-span-2 lg:self-start">
             <div v-if="categoryName" class="mb-2 line-clamp-1 text-[13px] text-muted-foreground">{{ categoryName }}</div>
 
             <h1 class="text-balance text-2xl font-bold leading-snug tracking-tight md:text-[28px]">
@@ -111,7 +111,7 @@
 
             <div v-if="activeSkus.length" class="mt-6">
               <h2 class="mb-2.5 text-[13px] font-semibold text-muted-foreground">{{ t('productDetail.skuTitle') }}</h2>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
                   v-for="sku in activeSkus"
                   :key="sku.id"
@@ -125,7 +125,7 @@
                   :aria-pressed="normalizeSkuId(sku.id) === selectedSkuId"
                   @click="selectedSkuId = normalizeSkuId(sku.id)"
                 >
-                  <span class="font-semibold leading-tight">{{ skuDisplayText(sku) }}</span>
+                  <span class="max-w-full font-semibold leading-tight [overflow-wrap:anywhere]">{{ skuDisplayText(sku) }}</span>
                   <span class="mt-1 rounded-full border px-2 py-0.5 text-[11px]" :class="skuStockBadgeClass(sku)">
                     {{ skuStockText(sku) }}
                   </span>
@@ -391,12 +391,3 @@ onUnmounted(() => {
   }
 })
 </script>
-
-<style scoped>
-/* 购买面板跟随滚动时不超过视口，规格很多时在面板内滚动 */
-@media (min-width: 1024px) {
-  .buy-panel {
-    max-height: calc(100vh - 7.5rem);
-  }
-}
-</style>
